@@ -1,2 +1,7 @@
-# redpeinture
-artisan peintre en bâtiment 
+echo "# redpeinture" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/snscmp/redpeinture.git
+git push -u origin main
