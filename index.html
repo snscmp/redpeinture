@@ -169,6 +169,46 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--vert);}
 
 /* Sous-onglets */
 .sub-tabs{display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid var(--gris-clair);padding-bottom:10px;}
+
+/* Communication — spinner */
+.spinner{width:32px;height:32px;border:3px solid var(--gris-clair);border-top-color:var(--vert-clair);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-block{text-align:center;padding:24px;display:none;}
+.loading-block p{color:var(--texte-doux);font-size:0.85rem;}
+
+/* Communication — blocs résultats */
+.platform-block{background:var(--gris-fonce);border:1px solid var(--gris-clair);border-radius:10px;margin-bottom:14px;overflow:hidden;}
+.platform-header{background:var(--gris-moyen);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;}
+.platform-name{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:2px;color:var(--vert-clair);display:flex;align-items:center;gap:8px;}
+.post-content{padding:16px;font-size:0.9rem;line-height:1.7;white-space:pre-wrap;}
+.hashtags-line{padding:0 16px 14px;font-size:0.82rem;color:var(--vert-clair);line-height:1.6;}
+.visuel-block{background:var(--gris-moyen);border-top:1px solid var(--gris-clair);padding:12px 16px;}
+.visuel-label{font-size:0.7rem;letter-spacing:2px;color:var(--texte-doux);text-transform:uppercase;margin-bottom:8px;}
+.visuel-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;font-size:0.83rem;color:var(--texte-doux);font-style:italic;line-height:1.5;}
+.visuel-item:last-child{margin-bottom:0;}
+.visuel-num{background:var(--vert);color:#fff;font-style:normal;font-size:0.7rem;font-weight:700;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+
+/* Communication — variantes avis */
+.variante-block{background:var(--gris-fonce);border:1px solid var(--gris-clair);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+.variante-header{background:var(--gris-moyen);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;}
+.variante-label{font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:2px;color:var(--vert-clair);}
+.variante-tag{font-size:0.7rem;color:var(--texte-doux);letter-spacing:1px;}
+.variante-text{padding:16px;font-size:0.9rem;line-height:1.7;white-space:pre-wrap;}
+.kw-tags{padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:6px;}
+.kw-tag{background:rgba(26,107,58,0.2);border:1px solid var(--vert);border-radius:20px;color:var(--vert-clair);font-size:0.7rem;padding:3px 10px;}
+
+/* Communication — étoiles & toggles */
+.stars{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.star-btn{background:var(--gris-moyen);border:1px solid var(--gris-clair);border-radius:6px;color:var(--texte-doux);font-size:1.1rem;padding:7px 11px;cursor:pointer;transition:all 0.15s;}
+.star-btn.active{border-color:#f0a500;color:#f0a500;background:#221a00;}
+.kw-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.kw-toggle{background:var(--gris-moyen);border:1px solid var(--gris-clair);border-radius:20px;color:var(--texte-doux);font-size:0.78rem;padding:6px 12px;cursor:pointer;transition:all 0.15s;user-select:none;}
+.kw-toggle.selected{background:rgba(26,107,58,0.2);border-color:var(--vert-clair);color:var(--vert-clair);}
+
+/* Clé API */
+.apikey-field{position:relative;}
+.apikey-field input{padding-right:80px;}
+.apikey-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:1px solid var(--gris-clair);color:var(--texte-doux);padding:3px 8px;border-radius:4px;cursor:pointer;font-size:0.7rem;}
 </style>
 </head>
 <body>
@@ -184,6 +224,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--vert);}
   <button class="tab" onclick="showTab('devis',this)">📋 Devis</button>
   <button class="tab" onclick="showTab('chantiers',this)">⏱ Chantiers</button>
   <button class="tab" onclick="showTab('ratios',this)">📐 Mes ratios</button>
+  <button class="tab" onclick="showTab('communication',this)">📣 Communication</button>
   <button class="tab" onclick="showTab('params',this)">⚙️ Params</button>
 </div>
 
@@ -476,8 +517,113 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--vert);}
   </div>
 </div>
 
+<!-- ===== COMMUNICATION ===== -->
+<div class="section" id="tab-communication">
+  <div class="sub-tabs">
+    <button class="tab active" onclick="showSubTab('communication','posts',this)">📱 Posts réseaux sociaux</button>
+    <button class="tab" onclick="showSubTab('communication','avis',this)">⭐ Réponses aux avis</button>
+  </div>
+
+  <!-- POSTS -->
+  <div id="sub-communication-posts">
+    <div class="card">
+      <div class="card-title">🔗 Source du chantier</div>
+      <div class="field" style="margin-bottom:14px;">
+        <label>URL page web (intégrée dans le post)</label>
+        <input type="url" id="post_url" placeholder="https://www.redpeinture51.fr/realisations/...">
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <label>Description du chantier</label>
+        <textarea id="post_desc" style="min-height:80px;" placeholder="Ex : Peinture intérieure d'un salon de 35m², murs en velours gris perle + plafond blanc, à Châlons. Client très satisfait."></textarea>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚙️ Détails complémentaires</div>
+      <div class="grid-2">
+        <div class="field"><label>Type de chantier</label><input type="text" id="post_type" placeholder="Intérieur / Extérieur..."></div>
+        <div class="field"><label>Ville / Commune</label><input type="text" id="post_ville" placeholder="Châlons-en-Champagne"></div>
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <label>Anecdote ou détail (très utile !)</label>
+        <input type="text" id="post_anecdote" placeholder="Ex : le client hésitait entre deux couleurs, on a fait un test sur le mur...">
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <label>Matériaux / Produits utilisés</label>
+        <input type="text" id="post_produits" placeholder="Ex : velours Tollens, enduit lissé, papier peint...">
+      </div>
+      <button class="btn" onclick="genererPosts()">⚡ GÉNÉRER LES POSTS</button>
+      <p style="font-size:0.72rem;color:var(--texte-doux);text-align:center;margin-top:8px;">Instagram · Facebook · Google Business</p>
+    </div>
+    <div class="loading-block" id="posts_loading"><div class="spinner"></div><p>Rédaction en cours…</p></div>
+    <div id="posts_error" class="alert warning" style="display:none;"></div>
+    <div id="posts_results"></div>
+  </div>
+
+  <!-- AVIS -->
+  <div id="sub-communication-avis" style="display:none;">
+    <div class="card">
+      <div class="card-title">⭐ L'avis client</div>
+      <div class="field" style="margin-bottom:14px;">
+        <label>Texte de l'avis Google</label>
+        <textarea id="avis_texte" style="min-height:90px;" placeholder="Collez ici le texte de l'avis Google du client..."></textarea>
+      </div>
+      <div class="field" style="margin-bottom:4px;"><label>Note donnée</label></div>
+      <div class="stars" id="stars">
+        <button class="star-btn active" onclick="setStar(1)">★ 1</button>
+        <button class="star-btn active" onclick="setStar(2)">★ 2</button>
+        <button class="star-btn active" onclick="setStar(3)">★ 3</button>
+        <button class="star-btn active" onclick="setStar(4)">★ 4</button>
+        <button class="star-btn active" onclick="setStar(5)">★★ 5</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🔑 Mots-clés SEO à intégrer</div>
+      <div class="field" style="margin-bottom:10px;"><label>Sélectionnez les travaux concernés</label></div>
+      <div class="kw-grid" id="kwGrid">
+        <span class="kw-toggle" onclick="toggleKw(this)">peinture intérieure</span>
+        <span class="kw-toggle" onclick="toggleKw(this)">peinture extérieure</span>
+        <span class="kw-toggle" onclick="toggleKw(this)">ravalement de façade</span>
+        <span class="kw-toggle" onclick="toggleKw(this)">plafond</span>
+        <span class="kw-toggle" onclick="toggleKw(this)">salon</span>
+        <span class="kw-toggle" onclick="toggleKw(this)">chambre</span>
+        <span class="kw-toggle" onclick="toggleKw(this)">cuisine</span>
+        <span class="kw-toggle" onclick="toggleKw(this)">salle de bain</span>
+        <span class="kw-toggle" onclick="toggleKw(this)">couloir</span>
+        <span class="kw-toggle" onclick="toggleKw(this)">dégâts des eaux</span>
+        <span class="kw-toggle" onclick="toggleKw(this)">enduit</span>
+        <span class="kw-toggle" onclick="toggleKw(this)">papier peint</span>
+        <span class="kw-toggle" onclick="toggleKw(this)">rénovation</span>
+        <span class="kw-toggle" onclick="toggleKw(this)">neuf</span>
+        <span class="kw-toggle selected" onclick="toggleKw(this)">Châlons-en-Champagne</span>
+        <span class="kw-toggle selected" onclick="toggleKw(this)">Marne</span>
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <label>Mots-clés supplémentaires (optionnel)</label>
+        <input type="text" id="avis_kw_custom" placeholder="Ex : Vitry-le-François, enduit décoratif...">
+      </div>
+      <button class="btn" onclick="genererAvis()">⚡ GÉNÉRER LES RÉPONSES</button>
+      <p style="font-size:0.72rem;color:var(--texte-doux);text-align:center;margin-top:8px;">3 variantes de ton différent</p>
+    </div>
+    <div class="loading-block" id="avis_loading"><div class="spinner"></div><p>Rédaction en cours…</p></div>
+    <div id="avis_error" class="alert warning" style="display:none;"></div>
+    <div id="avis_results"></div>
+  </div>
+</div>
+
 <!-- ===== PARAMS ===== -->
 <div class="section" id="tab-params">
+  <div class="card">
+    <div class="card-title">🤖 Clé API Anthropic (IA)</div>
+    <div class="field" style="margin-bottom:10px;">
+      <label>Clé API (pour Posts & Avis Google)</label>
+      <div class="apikey-field">
+        <input type="password" id="p_apikey" placeholder="sk-ant-api03-...">
+        <button class="apikey-toggle" onclick="toggleApiKeyVisibility()">Voir</button>
+      </div>
+    </div>
+    <p class="param-note">Votre clé reste sur cet appareil uniquement — jamais transmise ailleurs que l'API Anthropic. Obtenez-la sur console.anthropic.com.</p>
+    <button class="btn" style="max-width:200px;margin-top:10px;" onclick="sauvegarderParams()">💾 SAUVEGARDER</button>
+  </div>
   <div class="card">
     <div class="card-title">Paramètres de calcul</div>
     <div class="grid-3">
@@ -659,6 +805,13 @@ function showTab(tab, btn) {
   if (tab === 'dashboard') renderDashboard();
   if (tab === 'clients') renderClients();
   if (tab === 'ratios') { renderRatiosCalibrés(); renderRatiosReference(); }
+  if (tab === 'communication') {
+    document.getElementById('sub-communication-posts').style.display='block';
+    document.getElementById('sub-communication-avis').style.display='none';
+    const stabs=document.querySelectorAll('#tab-communication .sub-tabs .tab');
+    stabs.forEach(t=>t.classList.remove('active'));
+    if(stabs[0]) stabs[0].classList.add('active');
+  }
 }
 
 function showSubTab(parent, sub, btn) {
@@ -1181,9 +1334,11 @@ function calculerBilan() {
 
 function sauvegarderBilan() {
   if (!window._lastBilan) { alert('Calculez d\'abord le bilan.'); return; }
-  chantiersList.unshift({id:genId(),...window._lastBilan});
+  const saved = {id:genId(),...window._lastBilan};
+  chantiersList.unshift(saved);
   saveChantiers();
-  alert('✅ Chantier "'+window._lastBilan.client+'" sauvegardé !');
+  const creerPost = confirm('✅ Chantier "'+window._lastBilan.client+'" sauvegardé !\n\nVoulez-vous créer un post pour ce chantier ?');
+  if (creerPost) creerPostDepuisChantier(saved.id);
 }
 
 function resetChrono() {
@@ -1219,7 +1374,8 @@ function renderHistoriqueChantiers() {
           <div style="font-size:0.72rem;color:var(--texte-doux);">${b.devisHT||'?'}€ HT · marge ${b.margeReelle||'?'}%</div>
         </div>
       </div>
-      <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px;">
+      <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap;">
+        <button class="btn-small-green" onclick="creerPostDepuisChantier(${b.id})">📱 Créer un post</button>
         <button class="btn-small" onclick="supprimerChantier(${b.id})">✕</button>
       </div>
     </div>`;
@@ -1272,8 +1428,263 @@ function sauvegarderParams() {
   params.taux=parseFloat(document.getElementById('p_taux').value)||50;
   params.marge=parseFloat(document.getElementById('p_marge').value)||20;
   params.km=parseFloat(document.getElementById('p_km').value)||0.40;
-  saveParams(); alert('✅ Paramètres sauvegardés !');
+  saveParams();
+  const key=document.getElementById('p_apikey').value.trim();
+  if (key) localStorage.setItem('rp_apikey', key);
+  alert('✅ Paramètres sauvegardés !');
 }
+function toggleApiKeyVisibility() {
+  const el=document.getElementById('p_apikey');
+  el.type = el.type==='password' ? 'text' : 'password';
+}
+
+// ==================== API ANTHROPIC ====================
+async function callAPI(prompt, maxTokens) {
+  const key = localStorage.getItem('rp_apikey')||'';
+  if (!key) throw new Error('Clé API manquante — allez dans Params et saisissez votre clé Anthropic.');
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key': key,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body: JSON.stringify({
+      model:'claude-sonnet-4-6',
+      max_tokens: maxTokens,
+      messages:[{role:'user', content:prompt}]
+    })
+  });
+  if (!res.ok) {
+    const err=await res.json().catch(()=>({}));
+    throw new Error(err.error?.message || 'Erreur API '+res.status);
+  }
+  const data=await res.json();
+  return data.content.map(b=>b.text||'').join('');
+}
+
+function parseJSONSafe(raw) {
+  const clean = raw.replace(/```json|```/g,'').trim();
+  try { return JSON.parse(clean); } catch(e) {}
+  try { const m=clean.match(/\{[\s\S]*\}/); if(m) return JSON.parse(m[0]); } catch(e) {}
+  try {
+    const m=clean.replace(/[ -]/g,' ').match(/\{[\s\S]*\}/);
+    if(m) return JSON.parse(m[0]);
+  } catch(e) {}
+  throw new Error('Réponse non analysable — réessayez.');
+}
+
+// ==================== GÉNÉRATEUR POSTS ====================
+const PROMPT_POSTS = `Tu dois écrire des posts réseaux sociaux pour RED Peinture, artisan peintre à Châlons-en-Champagne.
+
+OBJECTIF : un ton professionnel mais humain. Ni trop lisse et marketing, ni trop familier ou brouillon. L'équilibre d'un artisan qui parle de son métier avec fierté et simplicité.
+
+RÈGLES DE TON :
+- Ne jamais commencer par "Bonjour" ou "Hello"
+- Commencer directement par le sujet ou une accroche courte et directe
+- Parler à la première personne (je), avec naturel
+- Montrer les étapes du travail comme un process normal et maîtrisé
+- Des détails techniques concrets qui montrent le savoir-faire sans se vanter
+- Une conclusion simple et chaleureuse, pas un slogan
+- 1 à 2 emojis max sur Instagram, 0 ou 1 sur Facebook, 0 sur Google Business
+
+MOTS INTERDITS : "savoir-faire", "expertise", "impeccable", "allier esthétique et qualité", "nous mettons tout notre coeur", "à votre service", "n'hésitez pas", "résultat bluffant", "artisan passionné", "la satisfaction de nos clients est notre priorité", "prestation de qualité"
+
+LIEN : si une URL est fournie, l'intégrer à l'intérieur du texte du post, naturellement, sur sa propre ligne après le texte. Format : "👉 [URL]"`;
+
+async function genererPosts() {
+  const url=document.getElementById('post_url').value.trim();
+  const desc=document.getElementById('post_desc').value.trim();
+  const type=document.getElementById('post_type').value.trim();
+  const ville=document.getElementById('post_ville').value.trim()||'Châlons-en-Champagne';
+  const anecdote=document.getElementById('post_anecdote').value.trim();
+  const produits=document.getElementById('post_produits').value.trim();
+  if (!desc) { showComError('posts', 'Renseignez au moins une description du chantier.'); return; }
+
+  setComLoading('posts', true);
+  const lien=url ? 'URL à intégrer dans chaque post (format "👉 '+url+'") : '+url : 'Pas de lien.';
+  const prompt = PROMPT_POSTS+'\n\n---\n\n'
+    +'Écris 3 posts pour ce chantier :\n'
+    +'- Description : '+(desc||'non fournie')+'\n'
+    +'- Type : '+(type||'non précisé')+'\n'
+    +'- Ville : '+ville+'\n'
+    +'- Produits : '+(produits||'non précisés')+'\n'
+    +'- Anecdote : '+(anecdote||'aucune')+'\n'
+    +'- '+lien+'\n\n'
+    +'Format :\n'
+    +'- instagram : 3-4 lignes, accroche directe, 1-2 emojis, lien si fourni\n'
+    +'- facebook : 5-7 lignes, étapes comme process normal, 0-1 emoji, lien si fourni\n'
+    +'- google_business : 2-3 lignes factuelles, ville, invitation devis, lien si fourni\n\n'
+    +'IMPORTANT : JSON brut uniquement. Commence par { et termine par }.\n\n'
+    +'{"instagram":{"texte":"...","hashtags":"...","visuels":["...","...","..."]},'
+    +'"facebook":{"texte":"...","hashtags":"...","visuels":["...","...","..."]},'
+    +'"google_business":{"texte":"...","hashtags":"...","visuels":["...","...","..."]}}';
+  try {
+    const raw=await callAPI(prompt, 1800);
+    const data=parseJSONSafe(raw);
+    afficherResultatsPosts(data);
+  } catch(err) { showComError('posts', err.message); }
+  finally { setComLoading('posts', false); }
+}
+
+function afficherResultatsPosts(data) {
+  const platforms=[
+    {key:'instagram',     label:'Instagram',       icon:'📸'},
+    {key:'facebook',      label:'Facebook',         icon:'👥'},
+    {key:'google_business',label:'Google Business', icon:'📍'},
+  ];
+  let html='';
+  platforms.forEach(p => {
+    const d=data[p.key]; if(!d) return;
+    const visuels=(Array.isArray(d.visuels)?d.visuels:[]).map((v,i)=>
+      `<div class="visuel-item"><span class="visuel-num">${i+1}</span>${escHtml(v)}</div>`).join('');
+    html+=`<div class="platform-block">
+      <div class="platform-header">
+        <div class="platform-name">${p.icon} ${p.label}</div>
+        <button class="btn-small-green" onclick="copierPost(this,'ptexte-${p.key}','phash-${p.key}')">Copier</button>
+      </div>
+      <div class="post-content" id="ptexte-${p.key}">${escHtml(d.texte)}</div>
+      <div class="hashtags-line" id="phash-${p.key}">${escHtml(d.hashtags||'')}</div>
+      ${visuels?`<div class="visuel-block"><div class="visuel-label">📷 Idées de photos</div>${visuels}</div>`:''}
+    </div>`;
+  });
+  const el=document.getElementById('posts_results');
+  el.innerHTML=html;
+  el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function copierPost(btn, texteId, hashId) {
+  const t=(document.getElementById(texteId)||{}).innerText||'';
+  const h=(document.getElementById(hashId)||{}).innerText||'';
+  navigator.clipboard.writeText(h ? t+'\n\n'+h : t).then(()=>{
+    btn.textContent='Copié !'; btn.style.borderColor='var(--vert-clair)';
+    setTimeout(()=>{btn.textContent='Copier'; btn.style.borderColor='';},2000);
+  });
+}
+
+function creerPostDepuisChantier(id) {
+  const ch=chantiersList.find(c=>c.id===id);
+  if (!ch) return;
+  // Basculer vers l'onglet communication > posts
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('#main-tabs .tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-communication').classList.add('active');
+  document.querySelectorAll('#main-tabs .tab').forEach((t,i)=>{if(i===5)t.classList.add('active');});
+  document.getElementById('sub-communication-posts').style.display='block';
+  document.getElementById('sub-communication-avis').style.display='none';
+  const stabs=document.querySelectorAll('#tab-communication .sub-tabs .tab');
+  stabs.forEach(t=>t.classList.remove('active')); if(stabs[0]) stabs[0].classList.add('active');
+  // Pré-remplir depuis le chantier
+  const surfaces=[];
+  if (ch.murs>0)    surfaces.push(ch.murs+'m² murs');
+  if (ch.plafond>0) surfaces.push(ch.plafond+'m² plafond');
+  const etapesNoms=(ch.etapes||[]).map(e=>e.nom).join(', ');
+  const desc=`${surfaces.join(' + ')} — chez ${ch.client}${ch.notes?' — '+ch.notes:''}${etapesNoms?' ('+etapesNoms+')':''}`.trim();
+  document.getElementById('post_desc').value=desc;
+  document.getElementById('post_ville').value='Châlons-en-Champagne';
+  document.getElementById('posts_results').innerHTML='';
+  document.getElementById('posts_error').style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ==================== GÉNÉRATEUR AVIS ====================
+const PROMPT_AVIS = `Tu rédiges des réponses aux avis Google pour RED Peinture, artisan peintre à Châlons-en-Champagne (Marne).
+
+OBJECTIF : réponses naturelles, professionnelles, humaines. Intégrer discrètement des mots-clés SEO de façon totalement naturelle.
+
+TON :
+- Direct et simple, comme s'il parlait à un voisin
+- Humble et sincère, jamais arrogant
+- Il remercie sans en faire trop
+- Il mentionne concrètement les travaux réalisés (pour le SEO)
+- Il peut mentionner la ville si pertinent
+- Phrases courtes, pas de grands discours
+- Signature obligatoire à la fin : "— RED Peinture, artisan peintre à Châlons-en-Champagne"
+
+MOTS INTERDITS : "savoir-faire", "expertise", "impeccable", "nous mettons tout notre coeur", "prestation de qualité", "n'hésitez pas à nous contacter", "artisan passionné", "satisfaire nos clients est notre priorité"`;
+
+let avisNote=5;
+function setStar(n) {
+  avisNote=n;
+  document.querySelectorAll('#stars .star-btn').forEach((btn,i)=>btn.classList.toggle('active',i<n));
+}
+function toggleKw(el) { el.classList.toggle('selected'); }
+function getSelectedKw() {
+  const sel=[];
+  document.querySelectorAll('#kwGrid .kw-toggle.selected').forEach(el=>sel.push(el.textContent.trim()));
+  const custom=document.getElementById('avis_kw_custom').value.trim();
+  if (custom) custom.split(',').forEach(s=>{const t=s.trim(); if(t) sel.push(t);});
+  return sel;
+}
+
+async function genererAvis() {
+  const avis=document.getElementById('avis_texte').value.trim();
+  if (!avis) { showComError('avis','Collez le texte de l\'avis client.'); return; }
+  const kws=getSelectedKw();
+  setComLoading('avis', true);
+  const prompt = PROMPT_AVIS+'\n\n---\n\n'
+    +'Avis client ('+avisNote+'/5) :\n"'+avis+'"\n\n'
+    +'Mots-clés SEO à intégrer naturellement : '+(kws.length?kws.join(', '):'aucun spécifié')+'\n\n'
+    +'Génère 3 variantes avec des tons légèrement différents :\n'
+    +'- variante1 : courte et chaleureuse (2-3 phrases max)\n'
+    +'- variante2 : un peu plus développée, mentionne un détail concret des travaux (3-4 phrases)\n'
+    +'- variante3 : ton très simple et direct (1-2 phrases)\n\n'
+    +(avisNote<=3?'ATTENTION : avis négatif ou mitigé. Rester calme, ne pas se défendre agressivement.\n\n':'')
+    +'IMPORTANT : JSON brut uniquement. Commence par { et termine par }.\n\n'
+    +'{"variante1":{"texte":"...","tag":"Chaleureuse","mots_cles_utilises":["kw1"]},'
+    +'"variante2":{"texte":"...","tag":"Détaillée","mots_cles_utilises":["kw1","kw2"]},'
+    +'"variante3":{"texte":"...","tag":"Directe","mots_cles_utilises":["kw1"]}}';
+  try {
+    const raw=await callAPI(prompt, 1200);
+    const data=parseJSONSafe(raw);
+    afficherResultatsAvis(data);
+  } catch(err) { showComError('avis', err.message); }
+  finally { setComLoading('avis', false); }
+}
+
+function afficherResultatsAvis(data) {
+  const variantes=['variante1','variante2','variante3'];
+  let html='';
+  variantes.forEach((key,i)=>{
+    const d=data[key]; if(!d) return;
+    const kws=(Array.isArray(d.mots_cles_utilises)?d.mots_cles_utilises:[])
+      .map(k=>`<span class="kw-tag">${escHtml(k)}</span>`).join('');
+    html+=`<div class="variante-block">
+      <div class="variante-header">
+        <div><span class="variante-label">Variante ${i+1}</span> <span class="variante-tag">— ${escHtml(d.tag||'')}</span></div>
+        <button class="btn-small-green" onclick="copierAvis(this,'avis-txt-${key}')">Copier</button>
+      </div>
+      <div class="variante-text" id="avis-txt-${key}">${escHtml(d.texte)}</div>
+      ${kws?`<div class="kw-tags">${kws}</div>`:''}
+    </div>`;
+  });
+  const el=document.getElementById('avis_results');
+  el.innerHTML=html;
+  el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function copierAvis(btn, id) {
+  const t=(document.getElementById(id)||{}).innerText||'';
+  navigator.clipboard.writeText(t).then(()=>{
+    btn.textContent='Copié !'; btn.style.borderColor='var(--vert-clair)';
+    setTimeout(()=>{btn.textContent='Copier'; btn.style.borderColor='';},2000);
+  });
+}
+
+// ==================== UTILS COMMUNICATION ====================
+function setComLoading(section, on) {
+  document.getElementById(section+'_loading').style.display=on?'block':'none';
+  document.getElementById(section+'_error').style.display='none';
+  if (!on) return;
+  document.getElementById(section+'_results').innerHTML='';
+}
+function showComError(section, msg) {
+  const el=document.getElementById(section+'_error');
+  el.textContent=msg; el.style.display='block';
+  document.getElementById(section+'_loading').style.display='none';
+}
+function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 // ==================== EXPORT / IMPORT ====================
 function exporterDonnees() {
@@ -1315,6 +1726,8 @@ window.onload = function() {
   document.getElementById('p_taux').value=params.taux;
   document.getElementById('p_marge').value=params.marge;
   document.getElementById('p_km').value=params.km;
+  const savedKey=localStorage.getItem('rp_apikey')||'';
+  document.getElementById('p_apikey').value=savedKey;
   renderPrestations('presta-murs', PM);
   renderPrestations('presta-plafond', PP);
   renderEtapes('etapes-murs', ETAPES_MURS, 'm²');
