@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RED Peinture — Système Pro</title>
+<meta name="theme-color" content="#1a6b3a">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+:root {
+  --vert:#1a6b3a; --vert-clair:#2ecc71; --noir:#0d0d0d;
+  --gris-fonce:#1a1a1a; --gris-moyen:#2a2a2a; --gris-clair:#3a3a3a;
+  --texte:#e8e8e8; --texte-doux:#999; --or:#f0c040; --rouge:#e74c3c;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--noir);color:var(--texte);font-family:'DM Sans',sans-serif;min-height:100vh;padding:16px;}
+header{text-align:center;padding:20px 0 14px;border-bottom:1px solid var(--gris-clair);margin-bottom:20px;}
+header h1{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:4px;color:white;}
+header h1 span{color:var(--vert-clair);}
+header p{color:var(--texte-doux);font-size:0.78rem;letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
+
+.tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+.tab{padding:8px 12px;border-radius:6px;border:1px solid var(--gris-clair);background:var(--gris-fonce);color:var(--texte-doux);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:500;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;}
+.tab:hover{border-color:var(--vert);color:var(--texte);}
+.tab.active{background:var(--vert);border-color:var(--vert);color:white;}
+.section{display:none;}.section.active{display:block;}
+
+.card{background:var(--gris-fonce);border:1px solid var(--gris-clair);border-radius:10px;padding:18px;margin-bottom:14px;}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;color:var(--vert-clair);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.card-title::before{content:'';display:block;width:4px;height:16px;background:var(--vert);border-radius:2px;}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+@media(max-width:560px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+.field{display:flex;flex-direction:column;gap:4px;}
+label{font-size:0.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--texte-doux);font-weight:500;}
+input,select,textarea{background:var(--gris-moyen);border:1px solid var(--gris-clair);border-radius:6px;padding:9px 11px;color:var(--texte);font-family:'DM Sans',sans-serif;font-size:0.9rem;transition:border-color 0.2s;width:100%;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--vert);}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px;}
+.kpi-box{background:var(--gris-moyen);border:1px solid var(--gris-clair);border-radius:10px;padding:16px;text-align:center;}
+.kpi-box.vert{background:rgba(26,107,58,0.2);border-color:var(--vert);}
+.kpi-val{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--vert-clair);line-height:1;}
+.kpi-box.vert .kpi-val{font-size:2rem;color:#4ade80;}
+.kpi-lbl{font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--texte-doux);margin-top:4px;}
+
+/* Mini liste dashboard */
+.mini-item{background:var(--gris-moyen);border:1px solid var(--gris-clair);border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;}
+.mini-nom{font-size:0.82rem;font-weight:600;}
+.mini-meta{font-size:0.7rem;color:var(--texte-doux);}
+.mini-val{font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--vert-clair);}
+
+/* Badges */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:0.68rem;font-weight:600;}
+.badge-attente{background:#2a2a0a;color:var(--or);border:1px solid var(--or);}
+.badge-accepte{background:#0a2a16;color:var(--vert-clair);border:1px solid var(--vert);}
+.badge-refuse{background:#2a0a0a;color:var(--rouge);border:1px solid var(--rouge);}
+.badge-reno{background:#1a2a3a;color:#60a0e0;border:1px solid #60a0e0;}
+.badge-neuf{background:#2a1a3a;color:#c060e0;border:1px solid #c060e0;}
+
+/* Profils */
+.profil-group{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.profil-btn{padding:7px 14px;border-radius:20px;border:1px solid var(--gris-clair);background:var(--gris-moyen);color:var(--texte-doux);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:600;transition:all 0.2s;user-select:none;}
+.profil-btn:hover{border-color:var(--vert);color:var(--texte);}
+.profil-btn.active-std{background:#1a3a25;border-color:var(--vert);color:var(--vert-clair);}
+.profil-btn.active-moy{background:#3a2a0a;border-color:var(--or);color:var(--or);}
+.profil-btn.active-gro{background:#3a1a1a;border-color:var(--rouge);color:#f08080;}
+.profil-btn.active-nf{background:#1a1a3a;border-color:#6080f0;color:#a0b0ff;}
+.profil-btn.clear-btn{font-size:0.72rem;}
+.profil-btn.clear-btn:hover{border-color:var(--rouge);color:var(--rouge);}
+
+/* Prestations checkboxes */
+.presta-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+@media(max-width:560px){.presta-grid{grid-template-columns:1fr;}}
+.presta-item{display:flex;align-items:center;gap:8px;background:var(--gris-moyen);border:1px solid var(--gris-clair);border-radius:6px;padding:8px 10px;cursor:pointer;transition:all 0.15s;user-select:none;}
+.presta-item:hover{border-color:var(--vert);}
+.presta-item.checked{background:rgba(26,107,58,0.2);border-color:var(--vert);}
+.presta-item input[type=checkbox]{display:none;}
+.presta-check{width:16px;height:16px;border:2px solid var(--gris-clair);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.presta-item.checked .presta-check{background:var(--vert);border-color:var(--vert);}
+.presta-check::after{content:'✓';font-size:10px;color:white;display:none;}
+.presta-item.checked .presta-check::after{display:block;}
+.presta-info{flex:1;}
+.presta-nom{font-size:0.82rem;font-weight:500;}
+.presta-detail{font-size:0.68rem;color:var(--texte-doux);margin-top:1px;}
+
+.section-recap{background:rgba(26,107,58,0.1);border:1px solid rgba(46,204,113,0.2);border-radius:6px;padding:10px 14px;margin-top:10px;display:flex;gap:16px;flex-wrap:wrap;font-size:0.8rem;}
+.section-recap span{color:var(--texte-doux);}
+.section-recap strong{color:var(--vert-clair);}
+
+/* Étapes chrono */
+.etape-item{background:var(--gris-moyen);border:1px solid var(--gris-clair);border-radius:8px;padding:12px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;}
+@media(max-width:560px){.etape-item{grid-template-columns:1fr;}}
+.etape-nom{font-size:0.88rem;font-weight:500;}
+.etape-zone{font-size:0.72rem;color:var(--texte-doux);margin-top:2px;}
+.etape-input{width:70px;text-align:center;padding:6px 8px;font-size:0.88rem;background:var(--gris-clair);border:1px solid var(--gris-clair);border-radius:4px;color:var(--texte);}
+.etape-input:focus{outline:none;border-color:var(--vert);}
+.etape-ratio{font-size:0.72rem;color:var(--texte-doux);text-align:right;min-width:70px;}
+.etape-ratio.bon{color:var(--vert-clair);}
+.etape-ratio.haut{color:var(--or);}
+.etape-ratio.bas{color:#60c0ff;}
+
+/* Boutons */
+.btn{background:var(--vert);color:white;border:none;border-radius:6px;padding:13px 24px;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:2px;cursor:pointer;transition:all 0.2s;width:100%;margin-top:6px;}
+.btn:hover{background:#1e8449;transform:translateY(-1px);}
+.btn-secondary{background:transparent;border:1px solid var(--vert);color:var(--vert-clair);max-width:280px;}
+.btn-secondary:hover{background:var(--vert);color:white;}
+.btn-danger{background:transparent;border:1px solid var(--rouge);color:var(--rouge);max-width:200px;}
+.btn-danger:hover{background:var(--rouge);color:white;}
+.btn-small{background:transparent;border:1px solid var(--rouge);color:var(--rouge);padding:3px 9px;border-radius:4px;font-size:0.72rem;cursor:pointer;transition:all 0.2s;}
+.btn-small:hover{background:var(--rouge);color:white;}
+.btn-small-green{background:transparent;border:1px solid var(--vert);color:var(--vert-clair);padding:3px 9px;border-radius:4px;font-size:0.72rem;cursor:pointer;transition:all 0.2s;}
+.btn-small-green:hover{background:var(--vert);color:white;}
+
+/* Résultats */
+.result-section{background:linear-gradient(135deg,#0d2217,#1a3a25);border:1px solid var(--vert);border-radius:10px;padding:18px;margin-top:14px;}
+.result-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:2px;color:var(--vert-clair);margin-bottom:14px;}
+.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:14px;}
+.result-box{background:rgba(0,0,0,0.3);border-radius:8px;padding:12px;text-align:center;}
+.result-box.big{background:rgba(26,107,58,0.3);border:1px solid var(--vert);}
+.result-box.warn{background:rgba(58,42,10,0.5);border:1px solid var(--or);}
+.result-box .val{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--vert-clair);}
+.result-box.big .val{font-size:1.6rem;color:#4ade80;}
+.result-box.warn .val{color:var(--or);}
+.result-box .lbl{font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--texte-doux);margin-top:2px;}
+
+.detail-table{width:100%;border-collapse:collapse;font-size:0.8rem;}
+.detail-table th{text-align:left;padding:7px 9px;background:rgba(0,0,0,0.3);color:var(--texte-doux);font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;}
+.detail-table td{padding:7px 9px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.detail-table tr:last-child td{border-bottom:none;}
+.detail-table .total-row td{font-weight:600;color:var(--vert-clair);background:rgba(0,0,0,0.2);}
+.detail-table .section-row td{color:var(--vert-clair);font-size:0.68rem;text-transform:uppercase;background:rgba(26,107,58,0.1);padding:5px 9px;}
+.detail-table .diff-pos{color:var(--or);}
+.detail-table .diff-neg{color:#60f080;}
+
+.divider{border:none;border-top:1px solid var(--gris-clair);margin:14px 0;}
+.alert{padding:10px 14px;border-radius:6px;font-size:0.8rem;margin-top:10px;}
+.alert.warning{background:#3a2a0a;border:1px solid var(--or);color:var(--or);}
+.alert.success{background:#0a2a16;border:1px solid var(--vert);color:var(--vert-clair);}
+.alert.info{background:#0a1a3a;border:1px solid #6080f0;color:#a0b0ff;}
+
+.item-card{background:var(--gris-moyen);border:1px solid var(--gris-clair);border-radius:8px;padding:12px;margin-bottom:8px;}
+.item-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;}
+.item-nom{font-weight:600;font-size:0.9rem;}
+.item-meta{font-size:0.72rem;color:var(--texte-doux);margin-top:2px;}
+.item-montant{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--vert-clair);}
+
+.ratio-item{background:var(--gris-moyen);border:1px solid var(--gris-clair);border-radius:6px;padding:10px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
+.ratio-nom{font-size:0.82rem;}
+.ratio-vals{text-align:right;font-size:0.78rem;}
+.ratio-ref{color:var(--texte-doux);}
+.ratio-reel{color:var(--vert-clair);font-weight:600;}
+.ratio-ecart{font-size:0.68rem;}
+.ratio-ecart.ok{color:var(--vert-clair);}
+.ratio-ecart.haut{color:var(--or);}
+
+.empty-state{text-align:center;padding:36px;color:var(--texte-doux);font-size:0.85rem;}
+.param-note{font-size:0.72rem;color:var(--texte-doux);margin-top:6px;font-style:italic;}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;}
+.modal-box{background:var(--gris-fonce);border:1px solid var(--vert);border-radius:12px;padding:20px;width:100%;max-width:600px;margin:auto;}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:2px;color:var(--vert-clair);}
+.modal-close{background:transparent;border:1px solid var(--gris-clair);color:var(--texte-doux);padding:4px 10px;border-radius:4px;cursor:pointer;font-size:0.8rem;}
+.modal-close:hover{border-color:var(--rouge);color:var(--rouge);}
+
+/* Sous-onglets */
+.sub-tabs{display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid var(--gris-clair);padding-bottom:10px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span>RED</span> PEINTURE</h1>
+  <p>Système Pro — Devis · Chantiers · Clients</p>
+</header>
+
+<div class="tabs" id="main-tabs">
+  <button class="tab active" onclick="showTab('dashboard',this)">📊 Tableau de bord</button>
+  <button class="tab" onclick="showTab('clients',this)">👥 Clients</button>
+  <button class="tab" onclick="showTab('devis',this)">📋 Devis</button>
+  <button class="tab" onclick="showTab('chantiers',this)">⏱ Chantiers</button>
+  <button class="tab" onclick="showTab('ratios',this)">📐 Mes ratios</button>
+  <button class="tab" onclick="showTab('params',this)">⚙️ Params</button>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="section active" id="tab-dashboard">
+  <div class="card">
+    <div class="card-title">Vue d'ensemble — <span id="dash-annee"></span></div>
+    <div class="kpi-grid">
+      <div class="kpi-box vert"><div class="kpi-val" id="kpi-ca">—</div><div class="kpi-lbl">CA HT devis acceptés</div></div>
+      <div class="kpi-box"><div class="kpi-val" id="kpi-nb">—</div><div class="kpi-lbl">Chantiers terminés</div></div>
+      <div class="kpi-box"><div class="kpi-val" id="kpi-taux">—</div><div class="kpi-lbl">Taux horaire moyen</div></div>
+      <div class="kpi-box"><div class="kpi-val" id="kpi-marge">—</div><div class="kpi-lbl">Marge moyenne</div></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Derniers devis</div>
+      <div id="dash-devis"><div class="empty-state">Aucun devis.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Derniers chantiers</div>
+      <div id="dash-chantiers"><div class="empty-state">Aucun chantier.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CLIENTS ===== -->
+<div class="section" id="tab-clients">
+  <div class="card">
+    <div class="card-title">Nouveau client</div>
+    <div class="grid-2">
+      <div class="field"><label>Nom / Société</label><input type="text" id="cl_nom" placeholder="M. et Mme Dupont"></div>
+      <div class="field"><label>Téléphone</label><input type="tel" id="cl_tel" placeholder="06 00 00 00 00"></div>
+      <div class="field"><label>Adresse</label><input type="text" id="cl_adresse" placeholder="12 rue de la Paix, Châlons..."></div>
+      <div class="field"><label>Notes</label><input type="text" id="cl_notes" placeholder="Infos utiles..."></div>
+    </div>
+    <button class="btn" style="max-width:220px;margin-top:10px;" onclick="ajouterClient()">➕ AJOUTER CLIENT</button>
+  </div>
+  <div class="card">
+    <div class="card-title">Mes clients</div>
+    <div id="liste-clients"><div class="empty-state">Aucun client enregistré.</div></div>
+  </div>
+</div>
+
+<!-- ===== DEVIS ===== -->
+<div class="section" id="tab-devis">
+  <div class="sub-tabs">
+    <button class="tab active" onclick="showSubTab('devis','nouveau',this)">📋 Nouveau devis</button>
+    <button class="tab" onclick="showSubTab('devis','historique',this)">🗂️ Historique</button>
+  </div>
+
+  <div id="sub-devis-nouveau">
+    <div class="card">
+      <div class="card-title">Client & chantier</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Client (liste)</label>
+          <select id="d_clientId" onchange="remplirClientDevis()">
+            <option value="">— Choisir dans la liste —</option>
+          </select>
+        </div>
+        <div class="field"><label>Nom client (libre)</label><input type="text" id="d_client" placeholder="M. et Mme Dupont"></div>
+        <div class="field"><label>Type travaux</label>
+          <select id="d_type">
+            <option value="reno">Rénovation (TVA 10%)</option>
+            <option value="neuf">Neuf (TVA 20%)</option>
+          </select>
+        </div>
+        <div class="field"><label>Statut devis</label>
+          <select id="d_statut">
+            <option value="en_attente">En attente</option>
+            <option value="accepte">Accepté</option>
+            <option value="refuse">Refusé</option>
+          </select>
+        </div>
+        <div class="field"><label>Date</label><input type="date" id="d_date"></div>
+        <div class="field"><label>Référence</label><input type="text" id="d_ref" placeholder="Optionnel"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Surfaces</div>
+      <div class="grid-3">
+        <div class="field"><label>M² murs</label><input type="number" id="d_murs" placeholder="0" min="0" step="0.5" oninput="updateRecaps()"></div>
+        <div class="field"><label>M² plafond</label><input type="number" id="d_plafond" placeholder="0" min="0" step="0.5" oninput="updateRecaps()"></div>
+        <div class="field"><label>ML plinthes</label><input type="number" id="d_plinthes" placeholder="0" min="0" step="0.5" oninput="updateRecaps()"></div>
+        <div class="field"><label>ML corniche</label><input type="number" id="d_corniche" placeholder="0" min="0" step="0.5" oninput="updateRecaps()"></div>
+        <div class="field"><label>Portes 1 face</label><input type="number" id="d_p1f" placeholder="0" min="0" oninput="updateRecaps()"></div>
+        <div class="field"><label>Portes 2 faces</label><input type="number" id="d_p2f" placeholder="0" min="0" oninput="updateRecaps()"></div>
+        <div class="field"><label>M² papier peint</label><input type="number" id="d_pp" placeholder="0" min="0" step="0.5" oninput="updateRecaps()"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🎨 Prestations murs</div>
+      <div class="profil-group">
+        <span style="font-size:0.72rem;color:var(--texte-doux);align-self:center;">Profil :</span>
+        <button class="profil-btn" onclick="appliquerProfil('murs','standard')">Standard</button>
+        <button class="profil-btn" onclick="appliquerProfil('murs','moyen')">Moyen</button>
+        <button class="profil-btn" onclick="appliquerProfil('murs','grosse')">Grosse réno</button>
+        <button class="profil-btn" onclick="appliquerProfil('murs','neuf')">Neuf</button>
+        <button class="profil-btn clear-btn" onclick="toutDecocher('murs')">✕ Effacer</button>
+      </div>
+      <div class="presta-grid" id="presta-murs"></div>
+      <div class="section-recap"><span>⏱ <strong id="rm_h">0h</strong></span><span>💰 <strong id="rm_ht">0€ HT</strong></span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🖌️ Prestations plafond</div>
+      <div class="profil-group">
+        <span style="font-size:0.72rem;color:var(--texte-doux);align-self:center;">Profil :</span>
+        <button class="profil-btn" onclick="appliquerProfil('plafond','standard')">Standard</button>
+        <button class="profil-btn" onclick="appliquerProfil('plafond','moyen')">Moyen</button>
+        <button class="profil-btn" onclick="appliquerProfil('plafond','grosse')">Grosse réno</button>
+        <button class="profil-btn" onclick="appliquerProfil('plafond','neuf')">Neuf</button>
+        <button class="profil-btn clear-btn" onclick="toutDecocher('plafond')">✕ Effacer</button>
+      </div>
+      <div class="presta-grid" id="presta-plafond"></div>
+      <div class="section-recap"><span>⏱ <strong id="rp_h">0h</strong></span><span>💰 <strong id="rp_ht">0€ HT</strong></span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🚪 Portes · Plinthes · Corniche</div>
+      <div class="section-recap"><span>⏱ <strong id="ra_h">0h</strong></span><span>💰 <strong id="ra_ht">0€ HT</strong></span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🚗 Déplacements & divers</div>
+      <div class="grid-3">
+        <div class="field"><label>Distance aller (km)</label><input type="number" id="d_km" placeholder="0" min="0"></div>
+        <div class="field"><label>Nb jours chantier</label><input type="number" id="d_jours" placeholder="0" min="0" step="0.5"></div>
+        <div class="field"><label>Surcoût cuisine/SdB (€)</label><input type="number" id="d_surcout" placeholder="0" min="0"></div>
+        <div class="field">
+          <label>Forfait fixe (h)</label>
+          <input type="number" id="d_forfait" value="2" min="0" step="0.5">
+          <span style="font-size:0.65rem;color:var(--texte-doux);margin-top:2px;">Prépa · chargement · nettoyage · gestion</span>
+        </div>
+        <div class="field">
+          <label>Protection + masquage (h)</label>
+          <input type="number" id="d_protection" placeholder="0" min="0" step="0.25">
+          <span style="font-size:0.65rem;color:var(--texte-doux);margin-top:2px;">Bâches · scotch · dépose interrupteurs</span>
+        </div>
+        <div class="field"><label>Notes chantier</label><input type="text" id="d_notes" placeholder="Infos spécifiques..."></div>
+      </div>
+    </div>
+
+    <button class="btn" onclick="calculerDevis()">⚡ CALCULER LE DEVIS</button>
+
+    <div id="resultat-devis" style="display:none;margin-top:14px;">
+      <div class="result-section">
+        <div class="result-title">📊 Résultat</div>
+        <div class="result-grid">
+          <div class="result-box"><div class="val" id="r_heures">—</div><div class="lbl">Heures totales</div></div>
+          <div class="result-box"><div class="val" id="r_mo">—</div><div class="lbl">Main d'œuvre</div></div>
+          <div class="result-box"><div class="val" id="r_mat">—</div><div class="lbl">Matériaux</div></div>
+          <div class="result-box"><div class="val" id="r_depl">—</div><div class="lbl">Déplacements</div></div>
+          <div class="result-box big"><div class="val" id="r_ht">—</div><div class="lbl">Prix HT conseillé</div></div>
+          <div class="result-box big"><div class="val" id="r_ttc">—</div><div class="lbl">Prix TTC client</div></div>
+          <div class="result-box"><div class="val" id="r_m2">—</div><div class="lbl">Prix au m²</div></div>
+        </div>
+        <div class="divider"></div>
+        <div class="result-title" style="font-size:0.95rem;margin-bottom:10px;">Détail par poste</div>
+        <table class="detail-table">
+          <thead><tr><th>Prestation</th><th>Qté</th><th>Temps</th><th>Mat.</th><th>HT</th></tr></thead>
+          <tbody id="detail-postes"></tbody>
+        </table>
+        <div id="d_alert_warn" class="alert warning" style="display:none;">⚠️ Taux horaire réel en dessous de votre objectif.</div>
+        <div id="d_alert_ok" class="alert success" style="display:none;">✅ Devis rentable — taux horaire dans votre objectif.</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+        <button class="btn btn-secondary" onclick="sauvegarderDevis()" style="margin-top:0;">💾 Sauvegarder</button>
+        <button class="btn btn-danger" onclick="resetDevis()" style="margin-top:0;">🔄 Nouveau</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="sub-devis-historique" style="display:none;">
+    <div class="card">
+      <div class="card-title">Devis sauvegardés</div>
+      <div id="liste-devis"><div class="empty-state">Aucun devis sauvegardé.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CHANTIERS ===== -->
+<div class="section" id="tab-chantiers">
+  <div class="sub-tabs">
+    <button class="tab active" onclick="showSubTab('chantiers','chrono',this)">⏱ Chrono chantier</button>
+    <button class="tab" onclick="showSubTab('chantiers','historique',this)">🗂️ Historique</button>
+  </div>
+
+  <div id="sub-chantiers-chrono">
+    <div class="card">
+      <div class="card-title">Infos chantier</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Client (liste)</label>
+          <select id="c_clientId" onchange="remplirClientChrono()">
+            <option value="">— Choisir dans la liste —</option>
+          </select>
+        </div>
+        <div class="field"><label>Nom client (libre)</label><input type="text" id="c_client" placeholder="M. et Mme Dupont"></div>
+        <div class="field">
+          <label>Lier à un devis</label>
+          <select id="c_devisId"><option value="">— Aucun devis lié —</option></select>
+        </div>
+        <div class="field"><label>Date</label><input type="date" id="c_date"></div>
+        <div class="field"><label>M² murs</label><input type="number" id="c_murs" placeholder="0" min="0" step="0.5" oninput="updateRatios()"></div>
+        <div class="field"><label>M² plafond</label><input type="number" id="c_plafond" placeholder="0" min="0" step="0.5" oninput="updateRatios()"></div>
+        <div class="field"><label>Prix devis HT (€)</label><input type="number" id="c_devis_ht" placeholder="0" min="0"></div>
+        <div class="field"><label>Nb jours réels</label><input type="number" id="c_jours" placeholder="0" min="0" step="0.5"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⏱ Temps par étape — Murs</div>
+      <div id="etapes-murs"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">⏱ Temps par étape — Plafond</div>
+      <div id="etapes-plafond"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">⏱ Temps par étape — Éléments</div>
+      <div id="etapes-elements"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚙️ Temps fixes</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Forfait fixe réel (h)</label>
+          <input type="number" id="c_forfait" placeholder="2" min="0" step="0.5" oninput="updateRatios()">
+          <span style="font-size:0.65rem;color:var(--texte-doux);margin-top:2px;">Prépa · chargement · nettoyage · gestion</span>
+        </div>
+        <div class="field"><label>Déplacements (km aller)</label><input type="number" id="c_km" placeholder="0" min="0" oninput="updateRatios()"></div>
+        <div class="field"><label>Notes</label><input type="text" id="c_notes" placeholder="Observations chantier..."></div>
+      </div>
+    </div>
+
+    <button class="btn" onclick="calculerBilan()">📊 CALCULER LE BILAN</button>
+
+    <div id="bilan" style="display:none;margin-top:14px;">
+      <div class="result-section">
+        <div class="result-title">📊 Bilan chantier</div>
+        <div class="result-grid">
+          <div class="result-box"><div class="val" id="b_heures">—</div><div class="lbl">Heures réelles</div></div>
+          <div class="result-box"><div class="val" id="b_jours">—</div><div class="lbl">Jours</div></div>
+          <div class="result-box big"><div class="val" id="b_taux">—</div><div class="lbl">Taux horaire réel</div></div>
+          <div class="result-box"><div class="val" id="b_devis">—</div><div class="lbl">Prix devisé HT</div></div>
+          <div class="result-box"><div class="val" id="b_cr">—</div><div class="lbl">Coût de revient</div></div>
+          <div class="result-box"><div class="val" id="b_marge">—</div><div class="lbl">Marge réelle</div></div>
+        </div>
+        <div class="divider"></div>
+        <div class="result-title" style="font-size:0.95rem;margin-bottom:10px;">Ratios h/m² réels vs référence</div>
+        <table class="detail-table">
+          <thead><tr><th>Étape</th><th>Zone</th><th>Temps réel</th><th>Ratio réel</th><th>Référence</th><th>Écart</th></tr></thead>
+          <tbody id="detail-ratios"></tbody>
+        </table>
+        <div id="bilan_alert" class="alert" style="display:none;"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+        <button class="btn btn-secondary" onclick="sauvegarderBilan()" style="margin-top:0;">💾 Sauvegarder chantier</button>
+        <button class="btn btn-danger" onclick="resetChrono()" style="margin-top:0;">🔄 Nouveau chantier</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="sub-chantiers-historique" style="display:none;">
+    <div class="card">
+      <div class="card-title">Chantiers documentés</div>
+      <div id="liste-chantiers"><div class="empty-state">Aucun chantier documenté.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RATIOS ===== -->
+<div class="section" id="tab-ratios">
+  <div class="card">
+    <div class="card-title">Mes ratios calibrés — Moyennes réelles</div>
+    <p style="font-size:0.78rem;color:var(--texte-doux);margin-bottom:14px;">Calculés à partir de vos chantiers documentés. Plus vous en ajoutez, plus c'est précis.</p>
+    <div id="ratios-calibres"><div class="empty-state">Documentez des chantiers pour voir vos ratios réels.</div></div>
+  </div>
+  <div class="card" style="border-color:var(--vert);">
+    <div class="card-title">Ratios de référence</div>
+    <table class="detail-table">
+      <thead><tr><th>Étape</th><th>Zone</th><th>Ratio actuel</th></tr></thead>
+      <tbody id="ratios-reference"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== PARAMS ===== -->
+<div class="section" id="tab-params">
+  <div class="card">
+    <div class="card-title">Paramètres de calcul</div>
+    <div class="grid-3">
+      <div class="field"><label>Taux horaire (€/h)</label><input type="number" id="p_taux" value="50" step="1"></div>
+      <div class="field"><label>Marge souhaitée (%)</label><input type="number" id="p_marge" value="20" step="1"></div>
+      <div class="field"><label>Taux km (€/km)</label><input type="number" id="p_km" value="0.40" step="0.01"></div>
+    </div>
+    <p class="param-note">Ces valeurs s'appliquent à tous les nouveaux calculs.</p>
+    <button class="btn" style="max-width:200px;margin-top:10px;" onclick="sauvegarderParams()">💾 SAUVEGARDER</button>
+  </div>
+  <div class="card">
+    <div class="card-title">Sauvegarde & restauration</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="exporterDonnees()" style="margin-top:0;">⬇️ Exporter mes données (JSON)</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()" style="margin-top:0;border-color:#6080f0;color:#a0b0ff;">⬆️ Importer (JSON)</button>
+      <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importerDonnees(event)">
+    </div>
+    <p class="param-note">L'export sauvegarde tous vos clients, devis et chantiers. À faire régulièrement sur clé USB.</p>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-detail" onclick="fermerModal(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-titre">Détail</div>
+      <button class="modal-close" onclick="document.getElementById('modal-detail').style.display='none'">✕ Fermer</button>
+    </div>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script>
+// ==================== DATA ====================
+let clients       = JSON.parse(localStorage.getItem('rp_clients')    || '[]');
+let devisList     = JSON.parse(localStorage.getItem('rp_devis')      || '[]');
+let chantiersList = JSON.parse(localStorage.getItem('rp_chantiers')  || '[]');
+let params        = JSON.parse(localStorage.getItem('rp_params')     || '{"taux":50,"marge":20,"km":0.40}');
+
+function saveClients()   { localStorage.setItem('rp_clients',    JSON.stringify(clients)); }
+function saveDevis()     { localStorage.setItem('rp_devis',      JSON.stringify(devisList)); }
+function saveChantiers() { localStorage.setItem('rp_chantiers',  JSON.stringify(chantiersList)); }
+function saveParams()    { localStorage.setItem('rp_params',     JSON.stringify(params)); }
+function genId()         { return Date.now() + Math.floor(Math.random()*1000); }
+
+// Migration des anciens outils (chrono_bilans + rdv3_devis)
+(function migrate() {
+  if (localStorage.getItem('rp_migrated')) return;
+  try {
+    const oldD = localStorage.getItem('rdv3_devis');
+    if (oldD) {
+      const old = JSON.parse(oldD);
+      devisList = [...old.map(d => ({...d, statut:'accepte', clientId:null})), ...devisList];
+      saveDevis();
+    }
+  } catch(e) {}
+  try {
+    const oldC = localStorage.getItem('chrono_bilans');
+    if (oldC) {
+      const old = JSON.parse(oldC);
+      chantiersList = [...old.map(c => ({...c, clientId:null, devisId:null, statut:'termine'})), ...chantiersList];
+      saveChantiers();
+    }
+  } catch(e) {}
+  localStorage.setItem('rp_migrated','1');
+})();
+
+// ==================== CATALOGUES ====================
+const TARIFS = {
+  ouverture_fissures:6, rebouchage:6, calicot:12, trame:40, trame_enduit:65,
+  depose_pp:13, pp_pose:12, corniche_ml:8, plinthes_ml:9,
+  porte_1f:40, porte_2f:80, neuf_m2:35, standard_m2:39, moyen_m2:50, grosse_m2:65
+};
+
+const PM = [
+  {id:'m_depose_pp',   nom:'Dépose papier peint',     temps:0.286, mat:0.20, tarif_fixe:TARIFS.depose_pp},
+  {id:'m_ouverture',   nom:'Ouverture fissures',       temps:0.083, mat:0.50, tarif_fixe:TARIFS.ouverture_fissures},
+  {id:'m_rebouchage',  nom:'Rebouchage',               temps:0.083, mat:1.00, tarif_fixe:TARIFS.rebouchage},
+  {id:'m_calicot',     nom:'Calicot + enduit fibré',   temps:0.100, mat:1.50, tarif_fixe:TARIFS.calicot},
+  {id:'m_trame',       nom:'Trame collée seule',        temps:0.220, mat:2.80, tarif_fixe:TARIFS.trame},
+  {id:'m_trame_enduit',nom:'Trame + 2 passes enduit',  temps:0.390, mat:4.00, tarif_fixe:TARIFS.trame_enduit},
+  {id:'m_reprise',     nom:'Reprise bandes placo',     temps:0.091, mat:0.50},
+  {id:'m_enduit1',     nom:'Enduit 1 passe',           temps:0.083, mat:0.61},
+  {id:'m_enduit2',     nom:'Enduit 2 passes',          temps:0.166, mat:1.21},
+  {id:'m_poncage',     nom:'Ponçage + époussiérage',   temps:0.083, mat:0.30},
+  {id:'m_souscouche',  nom:'Sous-couche',              temps:0.055, mat:0.73},
+  {id:'m_mat1',        nom:'1 couche mat',             temps:0.038, mat:0.93},
+  {id:'m_velours1',    nom:'1 couche velours',         temps:0.055, mat:0.85},
+  {id:'m_velours2',    nom:'2 couches velours',        temps:0.110, mat:1.70},
+];
+const PP = [
+  {id:'p_depose_pp',   nom:'Dépose papier peint',      temps:0.286, mat:0.20, tarif_fixe:TARIFS.depose_pp},
+  {id:'p_ouverture',   nom:'Ouverture fissures',        temps:0.083, mat:0.50, tarif_fixe:TARIFS.ouverture_fissures},
+  {id:'p_rebouchage',  nom:'Rebouchage + ponçage',      temps:0.057, mat:0.50, tarif_fixe:TARIFS.rebouchage},
+  {id:'p_calicot',     nom:'Calicot + enduit fibré',    temps:0.100, mat:1.50, tarif_fixe:TARIFS.calicot},
+  {id:'p_trame',       nom:'Trame collée seule',         temps:0.220, mat:2.80, tarif_fixe:TARIFS.trame},
+  {id:'p_trame_enduit',nom:'Trame + 2 passes enduit',   temps:0.390, mat:4.00, tarif_fixe:TARIFS.trame_enduit},
+  {id:'p_reprise',     nom:'Reprise bandes placo',      temps:0.091, mat:0.50},
+  {id:'p_enduit1',     nom:'Enduit 1 passe',            temps:0.085, mat:0.61},
+  {id:'p_enduit2',     nom:'Enduit 2 passes',           temps:0.170, mat:1.21},
+  {id:'p_poncage',     nom:'Ponçage + époussiérage',    temps:0.057, mat:0.30},
+  {id:'p_souscouche',  nom:'Sous-couche',               temps:0.038, mat:0.73},
+  {id:'p_mat1',        nom:'1 couche mat',              temps:0.038, mat:0.93},
+  {id:'p_mat2',        nom:'2 couches mat',             temps:0.076, mat:1.87},
+];
+const PROFILS = {
+  murs: {
+    standard:['m_rebouchage','m_enduit2','m_poncage','m_souscouche','m_velours2'],
+    moyen:   ['m_ouverture','m_rebouchage','m_calicot','m_enduit2','m_poncage','m_souscouche','m_velours2'],
+    grosse:  ['m_ouverture','m_rebouchage','m_calicot','m_trame_enduit','m_poncage','m_souscouche','m_velours2'],
+    neuf:    ['m_reprise','m_enduit1','m_poncage','m_souscouche','m_velours2'],
+  },
+  plafond: {
+    standard:['p_rebouchage','p_poncage','p_souscouche','p_mat1'],
+    moyen:   ['p_ouverture','p_rebouchage','p_poncage','p_enduit1','p_souscouche','p_mat1'],
+    grosse:  ['p_ouverture','p_rebouchage','p_calicot','p_enduit2','p_poncage','p_souscouche','p_mat2'],
+    neuf:    ['p_reprise','p_enduit1','p_poncage','p_souscouche','p_mat1'],
+  }
+};
+const ETAPES_MURS = [
+  {id:'em_depose_pp', nom:'Dépose papier peint',      ref:0.286, zone:'murs'},
+  {id:'em_ouverture', nom:'Ouverture fissures',        ref:0.083, zone:'murs'},
+  {id:'em_rebouchage',nom:'Rebouchage',                ref:0.083, zone:'murs'},
+  {id:'em_calicot',   nom:'Calicot + enduit fibré',    ref:0.100, zone:'murs'},
+  {id:'em_trame',     nom:'Trame collée',              ref:0.220, zone:'murs'},
+  {id:'em_reprise',   nom:'Reprise bandes placo',      ref:0.091, zone:'murs'},
+  {id:'em_enduit1',   nom:'Enduit 1 passe',            ref:0.083, zone:'murs'},
+  {id:'em_enduit2',   nom:'Enduit 2 passes',           ref:0.166, zone:'murs'},
+  {id:'em_poncage',   nom:'Ponçage + époussiérage',    ref:0.083, zone:'murs'},
+  {id:'em_revision',  nom:'Révision avant finition',   ref:0.028, zone:'murs'},
+  {id:'em_souscouche',nom:'Sous-couche',               ref:0.055, zone:'murs'},
+  {id:'em_velours1',  nom:'1 couche velours',          ref:0.055, zone:'murs'},
+  {id:'em_velours2',  nom:'2 couches velours',         ref:0.110, zone:'murs'},
+];
+const ETAPES_PLAFOND = [
+  {id:'ep_depose_pp', nom:'Dépose papier peint',       ref:0.286, zone:'plafond'},
+  {id:'ep_ouverture', nom:'Ouverture fissures',         ref:0.083, zone:'plafond'},
+  {id:'ep_rebouchage',nom:'Rebouchage + ponçage',       ref:0.057, zone:'plafond'},
+  {id:'ep_calicot',   nom:'Calicot + enduit fibré',     ref:0.100, zone:'plafond'},
+  {id:'ep_trame',     nom:'Trame collée',               ref:0.220, zone:'plafond'},
+  {id:'ep_reprise',   nom:'Reprise bandes placo',       ref:0.091, zone:'plafond'},
+  {id:'ep_enduit1',   nom:'Enduit 1 passe',             ref:0.085, zone:'plafond'},
+  {id:'ep_enduit2',   nom:'Enduit 2 passes',            ref:0.170, zone:'plafond'},
+  {id:'ep_poncage',   nom:'Ponçage + époussiérage',     ref:0.057, zone:'plafond'},
+  {id:'ep_souscouche',nom:'Sous-couche',                ref:0.038, zone:'plafond'},
+  {id:'ep_mat1',      nom:'1 couche mat',               ref:0.038, zone:'plafond'},
+  {id:'ep_mat2',      nom:'2 couches mat',              ref:0.076, zone:'plafond'},
+];
+const ETAPES_ELEMENTS = [
+  {id:'ee_corniche', nom:'Corniche',                  ref:0.12, zone:'ml',    unite:'ml'},
+  {id:'ee_plinthes', nom:'Plinthes',                  ref:0.12, zone:'ml',    unite:'ml'},
+  {id:'ee_porte_1f', nom:'Porte 1 face + huisserie',  ref:2.0,  zone:'porte', unite:'u'},
+  {id:'ee_porte_2f', nom:'Porte 2 faces + huisserie', ref:3.0,  zone:'porte', unite:'u'},
+  {id:'ee_pp_pose',  nom:'Pose papier peint',         ref:0.50, zone:'murs',  unite:'m²'},
+];
+
+let profilActif = {murs:null, plafond:null};
+
+// ==================== UTILS ====================
+function getV(id, def=0) {
+  const el = document.getElementById(id);
+  if (!el) return def;
+  const v = parseFloat(el.value);
+  return isNaN(v) ? def : v;
+}
+function formatDate(d) { return d ? d.split('-').reverse().join('/') : '—'; }
+function badgeStatut(s) {
+  if (s==='accepte') return '<span class="badge badge-accepte">Accepté</span>';
+  if (s==='refuse')  return '<span class="badge badge-refuse">Refusé</span>';
+  return '<span class="badge badge-attente">En attente</span>';
+}
+
+// ==================== NAVIGATION ====================
+function showTab(tab, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('#main-tabs .tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (tab === 'dashboard') renderDashboard();
+  if (tab === 'clients') renderClients();
+  if (tab === 'ratios') { renderRatiosCalibrés(); renderRatiosReference(); }
+}
+
+function showSubTab(parent, sub, btn) {
+  const prefix = 'sub-' + parent + '-';
+  document.querySelectorAll('[id^="' + prefix + '"]').forEach(el => el.style.display = 'none');
+  document.getElementById(prefix + sub).style.display = 'block';
+  btn.closest('.sub-tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  if (parent==='devis' && sub==='historique') renderHistoriqueDevis();
+  if (parent==='chantiers' && sub==='historique') renderHistoriqueChantiers();
+}
+
+// ==================== DASHBOARD ====================
+function renderDashboard() {
+  const annee = new Date().getFullYear();
+  document.getElementById('dash-annee').textContent = annee;
+
+  const acceptes = devisList.filter(d => d.statut==='accepte' && (d.date||'').startsWith(annee));
+  const ca = acceptes.reduce((s,d) => s + (parseFloat(d.prixHT)||0), 0);
+  document.getElementById('kpi-ca').textContent = ca > 0 ? ca.toLocaleString('fr-FR') + '€' : '—';
+
+  const termines = chantiersList.filter(c => c.statut==='termine');
+  document.getElementById('kpi-nb').textContent = termines.length || '—';
+
+  const tauxArr = termines.map(c => parseFloat(c.tauxReel)||0).filter(v => v > 0);
+  document.getElementById('kpi-taux').textContent = tauxArr.length
+    ? (tauxArr.reduce((a,b)=>a+b,0)/tauxArr.length).toFixed(0) + '€/h' : '—';
+
+  const margeArr = termines.map(c => parseFloat(c.margeReelle)||0).filter(v => v !== 0);
+  document.getElementById('kpi-marge').textContent = margeArr.length
+    ? (margeArr.reduce((a,b)=>a+b,0)/margeArr.length).toFixed(0) + '%' : '—';
+
+  document.getElementById('dash-devis').innerHTML = devisList.slice(0,4).map(d => `
+    <div class="mini-item">
+      <div><div class="mini-nom">${d.client||'—'}</div><div class="mini-meta">${formatDate(d.date)} ${badgeStatut(d.statut)}</div></div>
+      <div class="mini-val">${parseInt(d.prixHT||0).toLocaleString('fr-FR')}€</div>
+    </div>`).join('') || '<div class="empty-state">Aucun devis.</div>';
+
+  document.getElementById('dash-chantiers').innerHTML = chantiersList.slice(0,4).map(c => {
+    const taux = parseFloat(c.tauxReel)||0;
+    const couleur = taux>=42 ? 'var(--vert-clair)' : taux>=35 ? 'var(--or)' : 'var(--rouge)';
+    return `<div class="mini-item">
+      <div><div class="mini-nom">${c.client||'—'}</div><div class="mini-meta">${formatDate(c.date)} · ${c.totalH||'?'}h · ${c.murs||0}+${c.plafond||0}m²</div></div>
+      <div class="mini-val" style="color:${couleur};">${c.tauxReel||'—'}€/h</div>
+    </div>`;
+  }).join('') || '<div class="empty-state">Aucun chantier.</div>';
+}
+
+// ==================== CLIENTS ====================
+function ajouterClient() {
+  const nom = document.getElementById('cl_nom').value.trim();
+  if (!nom) { alert('Saisissez au moins un nom.'); return; }
+  clients.unshift({
+    id: genId(), nom,
+    tel: document.getElementById('cl_tel').value.trim(),
+    adresse: document.getElementById('cl_adresse').value.trim(),
+    notes: document.getElementById('cl_notes').value.trim(),
+    dateCreation: new Date().toISOString().split('T')[0]
+  });
+  saveClients();
+  ['cl_nom','cl_tel','cl_adresse','cl_notes'].forEach(id => document.getElementById(id).value = '');
+  renderClients();
+  refreshClientSelects();
+}
+
+function renderClients() {
+  const el = document.getElementById('liste-clients');
+  if (!clients.length) { el.innerHTML = '<div class="empty-state">Aucun client enregistré.</div>'; return; }
+  el.innerHTML = clients.map(c => {
+    const nbD = devisList.filter(d => d.clientId == c.id).length;
+    const nbC = chantiersList.filter(ch => ch.clientId == c.id).length;
+    return `<div class="item-card">
+      <div class="item-header">
+        <div>
+          <div class="item-nom">${c.nom}</div>
+          <div class="item-meta">${c.tel ? '📞 '+c.tel+' · ' : ''}${c.adresse ? '📍 '+c.adresse : ''}</div>
+          <div class="item-meta" style="margin-top:4px;">📋 ${nbD} devis · ⏱ ${nbC} chantiers${c.notes ? ' · 📝 '+c.notes : ''}</div>
+        </div>
+        <button class="btn-small" onclick="supprimerClient(${c.id})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function supprimerClient(id) {
+  if (!confirm('Supprimer ce client ?')) return;
+  clients = clients.filter(c => c.id !== id);
+  saveClients(); renderClients(); refreshClientSelects();
+}
+
+function refreshClientSelects() {
+  const opts = '<option value="">— Choisir dans la liste —</option>' +
+    clients.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
+  ['d_clientId','c_clientId'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.innerHTML = opts;
+  });
+  refreshDevisSelect();
+}
+
+function refreshDevisSelect() {
+  const el = document.getElementById('c_devisId');
+  if (!el) return;
+  el.innerHTML = '<option value="">— Aucun devis lié —</option>' +
+    devisList.map(d => `<option value="${d.id}">${d.client} — ${formatDate(d.date)} — ${parseInt(d.prixHT||0)}€</option>`).join('');
+}
+
+function remplirClientDevis() {
+  const id = document.getElementById('d_clientId').value;
+  const c = clients.find(c => c.id == id);
+  if (c) document.getElementById('d_client').value = c.nom;
+}
+function remplirClientChrono() {
+  const id = document.getElementById('c_clientId').value;
+  const c = clients.find(c => c.id == id);
+  if (c) document.getElementById('c_client').value = c.nom;
+}
+
+// ==================== DEVIS — Prestations ====================
+function renderPrestations(containerId, liste) {
+  document.getElementById(containerId).innerHTML = liste.map(p => {
+    const detail = p.tarif_fixe
+      ? `${p.tarif_fixe}€/m² fixe · ${p.temps}h/m²`
+      : `${p.temps}h/m² · ${p.mat}€/m² mat`;
+    return `<div class="presta-item" id="item_${p.id}" onclick="togglePresta('${p.id}')">
+      <input type="checkbox" id="${p.id}">
+      <div class="presta-check"></div>
+      <div class="presta-info">
+        <div class="presta-nom">${p.nom}</div>
+        <div class="presta-detail">${detail}</div>
+      </div></div>`;
+  }).join('');
+}
+
+function togglePresta(id) {
+  const cb = document.getElementById(id);
+  cb.checked = !cb.checked;
+  document.getElementById('item_' + id).classList.toggle('checked', cb.checked);
+  updateRecaps();
+}
+function isChecked(id) { const el = document.getElementById(id); return el ? el.checked : false; }
+
+function appliquerProfil(zone, profil) {
+  const cat = zone==='murs' ? PM : PP;
+  const ids = PROFILS[zone][profil] || [];
+  cat.forEach(p => {
+    const cb = document.getElementById(p.id), item = document.getElementById('item_'+p.id);
+    if (cb && item) { cb.checked = ids.includes(p.id); item.classList.toggle('checked', cb.checked); }
+  });
+  profilActif[zone] = profil;
+  updateRecaps();
+}
+function toutDecocher(zone) {
+  (zone==='murs' ? PM : PP).forEach(p => {
+    const cb = document.getElementById(p.id), item = document.getElementById('item_'+p.id);
+    if (cb && item) { cb.checked = false; item.classList.remove('checked'); }
+  });
+  profilActif[zone] = null;
+  updateRecaps();
+}
+
+function getTarifProfil(profil) {
+  if (!profil) return null;
+  return {standard:TARIFS.standard_m2, moyen:TARIFS.moyen_m2, grosse:TARIFS.grosse_m2, neuf:TARIFS.neuf_m2}[profil] || null;
+}
+
+function calcSection(cat, surf, zone) {
+  let heures=0, ht=0;
+  const tauxH=params.taux, marge=params.marge/100;
+  const tarifP = getTarifProfil(profilActif[zone]);
+  const idsP = profilActif[zone] ? PROFILS[zone][profilActif[zone]] : [];
+  let profilCompte = false;
+  cat.forEach(p => {
+    if (!isChecked(p.id)) return;
+    heures += surf * p.temps;
+    if (tarifP && idsP.includes(p.id)) { profilCompte = true; }
+    else if (p.tarif_fixe) { ht += surf * p.tarif_fixe; }
+    else { ht += (surf*p.temps*tauxH + surf*p.mat) * (1+marge); }
+  });
+  if (profilCompte && tarifP) ht += surf * tarifP;
+  return {heures, ht};
+}
+
+function updateRecaps() {
+  const murs=getV('d_murs'), plafond=getV('d_plafond');
+  const plinthes=getV('d_plinthes'), corniche=getV('d_corniche'), p1f=getV('d_p1f'), p2f=getV('d_p2f');
+  const rm = calcSection(PM, murs, 'murs');
+  document.getElementById('rm_h').textContent = rm.heures.toFixed(1)+'h';
+  document.getElementById('rm_ht').textContent = rm.ht.toFixed(0)+'€ HT';
+  const rp = calcSection(PP, plafond, 'plafond');
+  document.getElementById('rp_h').textContent = rp.heures.toFixed(1)+'h';
+  document.getElementById('rp_ht').textContent = rp.ht.toFixed(0)+'€ HT';
+  const ha = plinthes*0.12 + corniche*0.12 + p1f*2 + p2f*3;
+  const hta = plinthes*TARIFS.plinthes_ml + corniche*TARIFS.corniche_ml + p1f*TARIFS.porte_1f + p2f*TARIFS.porte_2f;
+  document.getElementById('ra_h').textContent = ha.toFixed(1)+'h';
+  document.getElementById('ra_ht').textContent = hta.toFixed(0)+'€ HT';
+}
+
+// ==================== DEVIS — Calcul ====================
+function calculerDevis() {
+  const murs=getV('d_murs'), plafond=getV('d_plafond'), plinthes=getV('d_plinthes');
+  const corniche=getV('d_corniche'), p1f=getV('d_p1f'), p2f=getV('d_p2f'), pp=getV('d_pp');
+  const km=getV('d_km'), jours=getV('d_jours'), surcout=getV('d_surcout');
+  const forfait=getV('d_forfait',2), protection=getV('d_protection',0);
+  const type = document.getElementById('d_type').value;
+  const tva = type==='neuf' ? 1.20 : 1.10;
+  const tauxH=params.taux, marge=params.marge/100;
+
+  if (!murs && !plafond && !p1f && !p2f && !plinthes && !corniche) {
+    alert('Veuillez saisir au moins une surface.'); return;
+  }
+
+  let totalH=0, totalMat=0, detailHTML='';
+  function ligneD(nom, qte, unite, h, mat, ht) {
+    totalH+=h; totalMat+=mat;
+    return `<tr><td>${nom}</td><td>${qte} ${unite}</td><td>${h.toFixed(1)}h</td><td>${mat.toFixed(0)}€</td><td>${ht.toFixed(0)}€</td></tr>`;
+  }
+
+  // MURS
+  if (murs > 0) {
+    const tP=getTarifProfil(profilActif.murs), idsP=profilActif.murs?PROFILS.murs[profilActif.murs]:[];
+    let sec='', done=false, hP=0, mP=0;
+    PM.forEach(p => { if(isChecked(p.id)&&tP&&idsP.includes(p.id)){hP+=murs*p.temps;mP+=murs*p.mat;} });
+    PM.forEach(p => {
+      if (!isChecked(p.id)) return;
+      const h=murs*p.temps, mat=murs*p.mat;
+      if (tP && idsP.includes(p.id)) {
+        if (!done) { sec+=`<tr><td>Forfait ${profilActif.murs} (${tP}€/m²)</td><td>${murs} m²</td><td>${hP.toFixed(1)}h</td><td>${mP.toFixed(0)}€</td><td>${(murs*tP).toFixed(0)}€</td></tr>`; totalH+=hP; totalMat+=mP; done=true; }
+        return;
+      }
+      sec += ligneD(p.nom, murs, 'm²', h, mat, p.tarif_fixe ? murs*p.tarif_fixe : (h*tauxH+mat)*(1+marge));
+    });
+    if (sec) detailHTML += `<tr class="section-row"><td colspan="5">🎨 MURS (${murs} m²)</td></tr>${sec}`;
+  }
+
+  // PLAFOND
+  if (plafond > 0) {
+    const tP=getTarifProfil(profilActif.plafond), idsP=profilActif.plafond?PROFILS.plafond[profilActif.plafond]:[];
+    let sec='', done=false, hP=0, mP=0;
+    PP.forEach(p => { if(isChecked(p.id)&&tP&&idsP.includes(p.id)){hP+=plafond*p.temps;mP+=plafond*p.mat;} });
+    PP.forEach(p => {
+      if (!isChecked(p.id)) return;
+      const h=plafond*p.temps, mat=plafond*p.mat;
+      if (tP && idsP.includes(p.id)) {
+        if (!done) { sec+=`<tr><td>Forfait ${profilActif.plafond} (${tP}€/m²)</td><td>${plafond} m²</td><td>${hP.toFixed(1)}h</td><td>${mP.toFixed(0)}€</td><td>${(plafond*tP).toFixed(0)}€</td></tr>`; totalH+=hP; totalMat+=mP; done=true; }
+        return;
+      }
+      sec += ligneD(p.nom, plafond, 'm²', h, mat, p.tarif_fixe ? plafond*p.tarif_fixe : (h*tauxH+mat)*(1+marge));
+    });
+    if (sec) detailHTML += `<tr class="section-row"><td colspan="5">🖌️ PLAFOND (${plafond} m²)</td></tr>${sec}`;
+  }
+
+  if (pp>0)      { detailHTML+=`<tr class="section-row"><td colspan="5">🖼️ PAPIER PEINT (${pp} m²)</td></tr>`; detailHTML+=ligneD('Pose papier peint',pp,'m²',pp*0.50,pp*0.50,pp*TARIFS.pp_pose); }
+  if (plinthes>0){ detailHTML+=`<tr class="section-row"><td colspan="5">📏 PLINTHES (${plinthes} ml)</td></tr>`; detailHTML+=ligneD('Plinthes glycéro',plinthes,'ml',plinthes*0.12,plinthes*0.50,plinthes*TARIFS.plinthes_ml); }
+  if (corniche>0){ detailHTML+=`<tr class="section-row"><td colspan="5">📐 CORNICHE (${corniche} ml)</td></tr>`; detailHTML+=ligneD('Peinture corniche',corniche,'ml',corniche*0.12,corniche*0.50,corniche*TARIFS.corniche_ml); }
+  if (p1f>0||p2f>0) {
+    detailHTML+=`<tr class="section-row"><td colspan="5">🚪 PORTES</td></tr>`;
+    if (p1f>0) detailHTML+=ligneD('1 face + huisserie',p1f,'porte(s)',p1f*2,p1f*8,p1f*TARIFS.porte_1f);
+    if (p2f>0) detailHTML+=ligneD('2 faces + huisserie',p2f,'porte(s)',p2f*3,p2f*12,p2f*TARIFS.porte_2f);
+  }
+  if (forfait>0) {
+    const ht=forfait*tauxH*(1+marge);
+    detailHTML+=`<tr class="section-row"><td colspan="5">⚙️ FORFAIT FIXE</td></tr><tr><td>Prépa · chargement · nettoyage</td><td>—</td><td>${forfait}h</td><td>0€</td><td>${ht.toFixed(0)}€</td></tr>`;
+    totalH+=forfait;
+  }
+  if (protection>0) {
+    const ht=protection*tauxH*(1+marge);
+    detailHTML+=`<tr class="section-row"><td colspan="5">🛡️ PROTECTION</td></tr><tr><td>Bâches · scotch · masquage</td><td>—</td><td>${protection}h</td><td>0€</td><td>${ht.toFixed(0)}€</td></tr>`;
+    totalH+=protection;
+  }
+
+  const coutDepl=km*2*jours*params.km;
+  const sM=calcSection(PM,murs,'murs'), sP=calcSection(PP,plafond,'plafond');
+  const htAutres=plinthes*TARIFS.plinthes_ml+corniche*TARIFS.corniche_ml+p1f*TARIFS.porte_1f+p2f*TARIFS.porte_2f+pp*TARIFS.pp_pose;
+  const htForf=forfait*tauxH*(1+marge), htProt=protection*tauxH*(1+marge);
+  const prixHT = sM.ht + sP.ht + htAutres + htForf + htProt + coutDepl;
+  const mainOeuvre=totalH*tauxH, coutRevient=mainOeuvre+totalMat+coutDepl+surcout;
+  const prixTTC=prixHT*tva;
+  const surfPeintes=murs+plafond+pp;
+  const prixM2=surfPeintes>0?(sM.ht+sP.ht)/surfPeintes:0;
+  const tauxReel=totalH>0?(prixHT-totalMat-coutDepl-surcout)/totalH:0;
+
+  if (coutDepl>0) {
+    detailHTML+=`<tr class="section-row"><td colspan="5">🚗 DÉPLACEMENTS</td></tr><tr><td>Trajets aller-retour</td><td>${km}km × ${jours}j</td><td>—</td><td>—</td><td>${coutDepl.toFixed(0)}€</td></tr>`;
+  }
+  detailHTML+=`<tr class="total-row"><td>TOTAL</td><td>${surfPeintes.toFixed(0)} m²</td><td>${totalH.toFixed(1)}h</td><td>${totalMat.toFixed(0)}€</td><td>${prixHT.toFixed(0)}€</td></tr>`;
+
+  document.getElementById('r_heures').textContent=totalH.toFixed(1)+'h';
+  document.getElementById('r_mo').textContent=mainOeuvre.toFixed(0)+'€';
+  document.getElementById('r_mat').textContent=totalMat.toFixed(0)+'€';
+  document.getElementById('r_depl').textContent=coutDepl.toFixed(0)+'€';
+  document.getElementById('r_ht').textContent=prixHT.toFixed(0)+'€';
+  document.getElementById('r_ttc').textContent=prixTTC.toFixed(0)+'€';
+  document.getElementById('r_m2').textContent=prixM2.toFixed(0)+'€/m²';
+  document.getElementById('detail-postes').innerHTML=detailHTML;
+  document.getElementById('d_alert_warn').style.display=tauxReel<tauxH*0.9&&totalH>0?'block':'none';
+  document.getElementById('d_alert_ok').style.display=tauxReel>=tauxH*0.9&&totalH>0?'block':'none';
+
+  window._lastDevis = {
+    clientId: document.getElementById('d_clientId').value || null,
+    client: document.getElementById('d_client').value || 'Client sans nom',
+    ref: document.getElementById('d_ref').value,
+    notes: document.getElementById('d_notes').value,
+    statut: document.getElementById('d_statut').value,
+    type, date: document.getElementById('d_date').value,
+    murs, plafond, plinthes, corniche, p1f, p2f, pp, km, jours, surcout, forfait, protection,
+    surfaceTotale: surfPeintes, detailHTML,
+    heures: totalH.toFixed(1), prixHT: prixHT.toFixed(0),
+    prixTTC: prixTTC.toFixed(0), prixM2: prixM2.toFixed(0), tauxReel: tauxReel.toFixed(0),
+    prestasMurs: PM.filter(p => isChecked(p.id)).map(p => p.nom),
+    prestasPlafond: PP.filter(p => isChecked(p.id)).map(p => p.nom),
+  };
+
+  document.getElementById('resultat-devis').style.display='block';
+  document.getElementById('resultat-devis').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function sauvegarderDevis() {
+  if (!window._lastDevis) { alert('Calculez d\'abord le devis.'); return; }
+  devisList.unshift({id: genId(), ...window._lastDevis});
+  saveDevis(); refreshDevisSelect();
+  alert('✅ Devis "' + window._lastDevis.client + '" sauvegardé !');
+}
+
+function resetDevis() {
+  if (!confirm('Effacer le devis en cours ?')) return;
+  ['d_client','d_ref','d_notes','d_murs','d_plafond','d_plinthes','d_corniche','d_p1f','d_p2f','d_pp','d_km','d_jours','d_surcout','d_protection'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('d_forfait').value='2';
+  document.getElementById('d_clientId').value='';
+  document.getElementById('d_statut').value='en_attente';
+  [...PM,...PP].forEach(p => {
+    const cb=document.getElementById(p.id); if(cb) cb.checked=false;
+    const it=document.getElementById('item_'+p.id); if(it) it.classList.remove('checked');
+  });
+  profilActif={murs:null,plafond:null};
+  document.getElementById('resultat-devis').style.display='none';
+  updateRecaps(); window._lastDevis=null;
+}
+
+function renderHistoriqueDevis() {
+  const el = document.getElementById('liste-devis');
+  if (!devisList.length) { el.innerHTML='<div class="empty-state">Aucun devis sauvegardé.</div>'; return; }
+  el.innerHTML = devisList.map(d => `
+    <div class="item-card">
+      <div class="item-header">
+        <div>
+          <div class="item-nom">${d.client}${d.ref?' — '+d.ref:''} ${badgeStatut(d.statut)}</div>
+          <div class="item-meta">${formatDate(d.date)} · ${d.surfaceTotale||0}m² · ${d.heures}h · <span class="badge ${d.type==='neuf'?'badge-neuf':'badge-reno'}">${d.type==='neuf'?'Neuf':'Réno'}</span> · ${d.tauxReel}€/h · ${d.prixM2}€/m²</div>
+          ${d.notes?`<div class="item-meta">📝 ${d.notes}</div>`:''}
+        </div>
+        <div style="text-align:right;">
+          <div class="item-montant">${parseInt(d.prixHT||0).toLocaleString('fr-FR')} € HT</div>
+          <div style="font-size:0.72rem;color:var(--texte-doux);">${parseInt(d.prixTTC||0).toLocaleString('fr-FR')} € TTC</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap;align-items:center;">
+        <select onchange="changerStatutDevis(${d.id},this.value)" style="padding:4px 8px;font-size:0.72rem;width:auto;background:var(--gris-clair);">
+          <option value="en_attente" ${d.statut==='en_attente'?'selected':''}>En attente</option>
+          <option value="accepte" ${d.statut==='accepte'?'selected':''}>Accepté</option>
+          <option value="refuse" ${d.statut==='refuse'?'selected':''}>Refusé</option>
+        </select>
+        <button class="btn-small-green" onclick="demarrerChantierDepuisDevis(${d.id})">⏱ Démarrer chantier</button>
+        <button class="btn-small-green" onclick="voirDetailDevis(${d.id})">📋 Détail</button>
+        <button class="btn-small" onclick="supprimerDevis(${d.id})">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function changerStatutDevis(id, statut) {
+  const d = devisList.find(d => d.id===id);
+  if (d) { d.statut=statut; saveDevis(); }
+}
+
+function demarrerChantierDepuisDevis(id) {
+  const d = devisList.find(d => d.id===id);
+  if (!d) return;
+  // Basculer vers l'onglet chantiers
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('#main-tabs .tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-chantiers').classList.add('active');
+  document.querySelectorAll('#main-tabs .tab')[3].classList.add('active');
+  document.getElementById('sub-chantiers-chrono').style.display='block';
+  document.getElementById('sub-chantiers-historique').style.display='none';
+  // Pré-remplir depuis le devis
+  document.getElementById('c_client').value=d.client||'';
+  document.getElementById('c_clientId').value=d.clientId||'';
+  document.getElementById('c_devisId').value=id;
+  document.getElementById('c_devis_ht').value=d.prixHT||'';
+  document.getElementById('c_murs').value=d.murs||'';
+  document.getElementById('c_plafond').value=d.plafond||'';
+  document.getElementById('c_date').value=new Date().toISOString().split('T')[0];
+  window.scrollTo({top:0,behavior:'smooth'});
+  alert(`⏱ Chantier pré-rempli depuis le devis "${d.client}"\nRenseignez vos heures réelles par étape.`);
+}
+
+function voirDetailDevis(id) {
+  const d = devisList.find(d => d.id===id);
+  if (!d) return;
+  document.getElementById('modal-titre').textContent=`📋 ${d.client}`;
+  document.getElementById('modal-content').innerHTML=`
+    <div style="font-size:0.82rem;line-height:1.8;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div><span style="color:var(--texte-doux)">CLIENT</span><br><strong>${d.client}</strong></div>
+        <div><span style="color:var(--texte-doux)">DATE</span><br><strong>${formatDate(d.date)}</strong></div>
+        <div><span style="color:var(--texte-doux)">TYPE</span><br><strong>${d.type==='neuf'?'Neuf (TVA 20%)':'Réno (TVA 10%)'}</strong></div>
+        <div><span style="color:var(--texte-doux)">STATUT</span><br>${badgeStatut(d.statut)}</div>
+        <div><span style="color:var(--texte-doux)">SURFACES</span><br><strong>Murs: ${d.murs||0}m² · Plafond: ${d.plafond||0}m²</strong></div>
+        ${d.km>0?`<div><span style="color:var(--texte-doux)">DÉPL.</span><br><strong>${d.km}km × ${d.jours}j</strong></div>`:''}
+      </div>
+      ${d.notes?`<div style="margin-bottom:10px;padding:8px;background:var(--gris-moyen);border-radius:6px;">📝 ${d.notes}</div>`:''}
+      ${d.detailHTML?`<table class="detail-table"><thead><tr><th>Prestation</th><th>Qté</th><th>Temps</th><th>Mat.</th><th>HT</th></tr></thead><tbody>${d.detailHTML}</tbody></table><hr class="divider">`:''}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;">
+        <div style="background:rgba(26,107,58,0.2);border:1px solid var(--vert);border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#4ade80;">${parseInt(d.prixHT||0).toLocaleString('fr-FR')} €</div>
+          <div style="color:var(--texte-doux);font-size:0.68rem;">PRIX HT</div>
+        </div>
+        <div style="background:rgba(26,107,58,0.2);border:1px solid var(--vert);border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#4ade80;">${parseInt(d.prixTTC||0).toLocaleString('fr-FR')} €</div>
+          <div style="color:var(--texte-doux);font-size:0.68rem;">PRIX TTC</div>
+        </div>
+        <div style="background:var(--gris-moyen);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--vert-clair);">${d.prixM2} €/m²</div>
+          <div style="color:var(--texte-doux);font-size:0.68rem;">PRIX AU M²</div>
+        </div>
+        <div style="background:var(--gris-moyen);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--vert-clair);">${d.tauxReel} €/h</div>
+          <div style="color:var(--texte-doux);font-size:0.68rem;">TAUX HORAIRE RÉEL</div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('modal-detail').style.display='flex';
+}
+
+function supprimerDevis(id) {
+  if (!confirm('Supprimer ce devis ?')) return;
+  devisList=devisList.filter(d=>d.id!==id);
+  saveDevis(); refreshDevisSelect(); renderHistoriqueDevis();
+}
+
+// ==================== CHRONO ====================
+function renderEtapes(containerId, liste, unite) {
+  document.getElementById(containerId).innerHTML = liste.map(e => `
+    <div class="etape-item">
+      <div><div class="etape-nom">${e.nom}</div><div class="etape-zone">Réf: ${e.ref}h/${e.unite||unite}</div></div>
+      <input type="number" class="etape-input" id="${e.id}" placeholder="0h" min="0" step="0.25" oninput="updateRatios()" title="Heures passées">
+      <div style="font-size:0.72rem;color:var(--texte-doux);">h</div>
+      <div class="etape-ratio" id="ratio_${e.id}">—</div>
+    </div>`).join('');
+}
+
+function updateRatios() {
+  const murs=getV('c_murs'), plafond=getV('c_plafond');
+  [...ETAPES_MURS,...ETAPES_PLAFOND].forEach(e => {
+    const h=getV(e.id), surf=e.zone==='murs'?murs:plafond;
+    const el=document.getElementById('ratio_'+e.id);
+    if (!el) return;
+    if (!h||!surf) { el.textContent='—'; el.className='etape-ratio'; return; }
+    const ratio=h/surf, ecart=((ratio-e.ref)/e.ref)*100;
+    el.textContent=ratio.toFixed(3)+'h/m²';
+    el.className='etape-ratio '+(Math.abs(ecart)<15?'bon':ecart>0?'haut':'bas');
+  });
+}
+
+function calculerBilan() {
+  const murs=getV('c_murs'), plafond=getV('c_plafond'), devisHT=getV('c_devis_ht');
+  const jours=getV('c_jours'), forfait=getV('c_forfait',2), km=getV('c_km');
+  let totalH=forfait;
+  [...ETAPES_MURS,...ETAPES_PLAFOND,...ETAPES_ELEMENTS].forEach(e => totalH+=getV(e.id));
+  totalH += jours*km*2/60;
+  const depl=km*2*jours*params.km;
+  const coutRevient=totalH*params.taux+depl;
+  const margeReelle=devisHT>0?((devisHT-coutRevient)/devisHT*100):0;
+  const tauxReel=totalH>0&&devisHT>0?(devisHT-depl)/totalH:0;
+
+  document.getElementById('b_heures').textContent=totalH.toFixed(1)+'h';
+  document.getElementById('b_jours').textContent=jours+'j';
+  document.getElementById('b_taux').textContent=tauxReel.toFixed(0)+'€/h';
+  document.getElementById('b_devis').textContent=devisHT.toFixed(0)+'€';
+  document.getElementById('b_cr').textContent=coutRevient.toFixed(0)+'€';
+  document.getElementById('b_marge').textContent=margeReelle.toFixed(0)+'%';
+
+  const tauxBox=document.getElementById('b_taux').parentElement;
+  tauxBox.className='result-box '+(tauxReel>=40?'big':tauxReel>=30?'':'warn');
+
+  let ratiosHTML='';
+  [...ETAPES_MURS,...ETAPES_PLAFOND].forEach(e => {
+    const h=getV(e.id); if(!h) return;
+    const surf=e.zone==='murs'?murs:plafond; if(!surf) return;
+    const r=h/surf, ep=((r-e.ref)/e.ref*100).toFixed(0);
+    const es=parseFloat(ep)>0?'+'+ep+'%':ep+'%';
+    ratiosHTML+=`<tr><td>${e.nom}</td><td>${e.zone}</td><td>${h.toFixed(1)}h</td><td>${r.toFixed(3)}h/m²</td><td>${e.ref}h/m²</td><td class="${Math.abs(parseFloat(ep))<15?'diff-neg':'diff-pos'}">${es}</td></tr>`;
+  });
+  document.getElementById('detail-ratios').innerHTML=ratiosHTML||'<tr><td colspan="6" style="text-align:center;color:var(--texte-doux);">Aucune étape renseignée</td></tr>';
+
+  const alertEl=document.getElementById('bilan_alert');
+  if (tauxReel<35) { alertEl.className='alert warning'; alertEl.textContent='⚠️ Taux horaire réel bas — revoir le prix de ce type de chantier.'; }
+  else if (tauxReel>=42) { alertEl.className='alert success'; alertEl.textContent='✅ Excellent taux horaire — ce type de chantier est bien calibré.'; }
+  else { alertEl.className='alert info'; alertEl.textContent='ℹ️ Taux horaire correct — dans la fourchette objectif.'; }
+  alertEl.style.display='block';
+
+  window._lastBilan = {
+    clientId: document.getElementById('c_clientId').value||null,
+    client: document.getElementById('c_client').value||'Chantier sans nom',
+    devisId: document.getElementById('c_devisId').value||null,
+    date: document.getElementById('c_date').value,
+    notes: document.getElementById('c_notes').value,
+    murs, plafond, devisHT, jours, forfait, km, statut:'termine',
+    totalH: totalH.toFixed(1), tauxReel: tauxReel.toFixed(0),
+    margeReelle: margeReelle.toFixed(0), coutRevient: coutRevient.toFixed(0),
+    etapes: [...ETAPES_MURS,...ETAPES_PLAFOND,...ETAPES_ELEMENTS].map(e => ({
+      id:e.id, nom:e.nom, zone:e.zone, ref:e.ref, heures:getV(e.id),
+      ratio:(e.zone!=='porte'&&e.zone!=='ml'&&(murs>0||plafond>0))?getV(e.id)/(e.zone==='murs'?murs:plafond):0
+    })).filter(e => e.heures>0)
+  };
+
+  document.getElementById('bilan').style.display='block';
+  document.getElementById('bilan').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function sauvegarderBilan() {
+  if (!window._lastBilan) { alert('Calculez d\'abord le bilan.'); return; }
+  chantiersList.unshift({id:genId(),...window._lastBilan});
+  saveChantiers();
+  alert('✅ Chantier "'+window._lastBilan.client+'" sauvegardé !');
+}
+
+function resetChrono() {
+  if (!confirm('Effacer le chantier en cours ?')) return;
+  ['c_client','c_murs','c_plafond','c_devis_ht','c_jours','c_forfait','c_km','c_notes'].forEach(id => {
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('c_clientId').value='';
+  document.getElementById('c_devisId').value='';
+  [...ETAPES_MURS,...ETAPES_PLAFOND,...ETAPES_ELEMENTS].forEach(e => {
+    const el=document.getElementById(e.id); if(el) el.value='';
+    const r=document.getElementById('ratio_'+e.id); if(r){r.textContent='—';r.className='etape-ratio';}
+  });
+  document.getElementById('bilan').style.display='none';
+  window._lastBilan=null;
+}
+
+function renderHistoriqueChantiers() {
+  const el=document.getElementById('liste-chantiers');
+  if (!chantiersList.length) { el.innerHTML='<div class="empty-state">Aucun chantier documenté.</div>'; return; }
+  el.innerHTML=chantiersList.map(b => {
+    const taux=parseFloat(b.tauxReel)||0;
+    const couleur=taux>=42?'var(--vert-clair)':taux>=35?'var(--or)':'var(--rouge)';
+    return `<div class="item-card">
+      <div class="item-header">
+        <div>
+          <div class="item-nom">${b.client}</div>
+          <div class="item-meta">${formatDate(b.date)} · ${b.murs||0}m² murs · ${b.plafond||0}m² plafond · ${b.totalH}h réelles</div>
+          ${b.notes?`<div class="item-meta">📝 ${b.notes}</div>`:''}
+        </div>
+        <div style="text-align:right;">
+          <div class="item-montant" style="color:${couleur};">${b.tauxReel}€/h</div>
+          <div style="font-size:0.72rem;color:var(--texte-doux);">${b.devisHT||'?'}€ HT · marge ${b.margeReelle||'?'}%</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px;">
+        <button class="btn-small" onclick="supprimerChantier(${b.id})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function supprimerChantier(id) {
+  if (!confirm('Supprimer ?')) return;
+  chantiersList=chantiersList.filter(c=>c.id!==id);
+  saveChantiers(); renderHistoriqueChantiers();
+}
+
+// ==================== RATIOS ====================
+function renderRatiosCalibrés() {
+  const el=document.getElementById('ratios-calibres');
+  if (!chantiersList.length) { el.innerHTML='<div class="empty-state">Documentez des chantiers pour voir vos ratios réels.</div>'; return; }
+  const moy={};
+  chantiersList.forEach(b => {
+    if (!b.etapes) return;
+    b.etapes.forEach(e => {
+      if (e.ratio<=0) return;
+      if (!moy[e.id]) moy[e.id]={nom:e.nom, ref:e.ref, vals:[]};
+      moy[e.id].vals.push(e.ratio);
+    });
+  });
+  const html=Object.values(moy).map(m => {
+    const avg=m.vals.reduce((a,b)=>a+b,0)/m.vals.length;
+    const ep=((avg-m.ref)/m.ref*100).toFixed(0);
+    const es=parseFloat(ep)>0?'+'+ep+'%':ep+'%';
+    return `<div class="ratio-item">
+      <div class="ratio-nom">${m.nom} <span style="color:var(--texte-doux);font-size:0.68rem;">(${m.vals.length} chantier${m.vals.length>1?'s':''})</span></div>
+      <div class="ratio-vals">
+        <div class="ratio-reel">${avg.toFixed(3)}h/m²</div>
+        <div class="ratio-ref">Réf: ${m.ref}h/m²</div>
+        <div class="ratio-ecart ${Math.abs(parseFloat(ep))<15?'ok':'haut'}">${es}</div>
+      </div></div>`;
+  }).join('');
+  el.innerHTML=html||'<div class="empty-state">Pas encore assez de données.</div>';
+}
+
+function renderRatiosReference() {
+  document.getElementById('ratios-reference').innerHTML=
+    [...ETAPES_MURS,...ETAPES_PLAFOND].map(e =>
+      `<tr><td>${e.nom}</td><td style="color:var(--texte-doux);">${e.zone}</td><td style="color:var(--vert-clair);">${e.ref}h/m²</td></tr>`
+    ).join('');
+}
+
+// ==================== PARAMS ====================
+function sauvegarderParams() {
+  params.taux=parseFloat(document.getElementById('p_taux').value)||50;
+  params.marge=parseFloat(document.getElementById('p_marge').value)||20;
+  params.km=parseFloat(document.getElementById('p_km').value)||0.40;
+  saveParams(); alert('✅ Paramètres sauvegardés !');
+}
+
+// ==================== EXPORT / IMPORT ====================
+function exporterDonnees() {
+  const data={clients, devisList, chantiersList, params, exportDate:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`red-peinture-${new Date().toISOString().split('T')[0]}.json`; a.click();
+  URL.revokeObjectURL(url);
+}
+function importerDonnees(event) {
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(e) {
+    try {
+      const data=JSON.parse(e.target.result);
+      if (!confirm('Importer ces données ? Cela remplacera vos données actuelles.')) return;
+      if (data.clients)      { clients=data.clients; saveClients(); }
+      if (data.devisList)    { devisList=data.devisList; saveDevis(); }
+      if (data.chantiersList){ chantiersList=data.chantiersList; saveChantiers(); }
+      if (data.params)       { params=data.params; saveParams(); }
+      alert('✅ Import réussi !'); location.reload();
+    } catch(err) { alert('Fichier invalide.'); }
+  };
+  reader.readAsText(file);
+}
+
+// ==================== MODAL ====================
+function fermerModal(event) {
+  if (event.target===document.getElementById('modal-detail'))
+    document.getElementById('modal-detail').style.display='none';
+}
+
+// ==================== INIT ====================
+window.onload = function() {
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('d_date').value=today;
+  document.getElementById('c_date').value=today;
+  document.getElementById('p_taux').value=params.taux;
+  document.getElementById('p_marge').value=params.marge;
+  document.getElementById('p_km').value=params.km;
+  renderPrestations('presta-murs', PM);
+  renderPrestations('presta-plafond', PP);
+  renderEtapes('etapes-murs', ETAPES_MURS, 'm²');
+  renderEtapes('etapes-plafond', ETAPES_PLAFOND, 'm²');
+  renderEtapes('etapes-elements', ETAPES_ELEMENTS, null);
+  refreshClientSelects();
+  renderDashboard();
+};
+</script>
+</body>
+</html>
