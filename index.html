@@ -1469,7 +1469,7 @@ function parseJSONSafe(raw) {
   try { return JSON.parse(clean); } catch(e) {}
   try { const m=clean.match(/\{[\s\S]*\}/); if(m) return JSON.parse(m[0]); } catch(e) {}
   try {
-    const m=clean.replace(/[ -]/g,' ').match(/\{[\s\S]*\}/);
+    const m=clean.replace(/[\x00-\x1f\x7f]/g,' ').match(/\{[\s\S]*\}/);
     if(m) return JSON.parse(m[0]);
   } catch(e) {}
   throw new Error('Réponse non analysable — réessayez.');
