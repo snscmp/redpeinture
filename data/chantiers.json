@@ -1,0 +1,33 @@
+{
+  "chantiers": [
+    {
+      "id": "castagna-salon-2026",
+      "client": "Castagna",
+      "piece": "salon",
+      "surface_m2": 27,
+      "nb_murs": 11,
+      "type_renovation": "rénovation facile sur anciens murs peints",
+      "taches": [
+        { "libelle": "Protection", "duree_min": 120 },
+        { "libelle": "Ponçage mur et plafond", "duree_min": 60 },
+        { "libelle": "Rebouchage mur et plafond", "duree_min": 60 },
+        { "libelle": "Ouverture fissure et ponçage", "duree_min": 60 },
+        { "libelle": "Enduit murs une passe", "duree_min": 180 },
+        { "libelle": "Enduit 2 passes", "duree_min": 180 },
+        { "libelle": "Ponçage et époussetage enduit", "duree_min": 180 },
+        { "libelle": "Sous couche mur", "duree_min": 60 },
+        { "libelle": "Plafond", "duree_min": 20 },
+        { "libelle": "Ponçage corniches", "duree_min": 30 },
+        { "libelle": "Peinture corniche", "duree_min": 20 },
+        { "libelle": "Révision enduit", "duree_min": 30 },
+        { "libelle": "Ponçage / époussetage", "duree_min": 60 },
+        { "libelle": "Peinture mat 1 couche", "duree_min": 30 },
+        { "libelle": "Peinture corniche 2e passe", "duree_min": 30 },
+        { "libelle": "Peinture mur 1 couche", "duree_min": 120 },
+        { "libelle": "Peinture mur 2e couche", "duree_min": 120 },
+        { "libelle": "Rangement / nettoyage", "duree_min": 60 }
+      ],
+      "total_heures": 23.5
+    }
+  ]
+}
