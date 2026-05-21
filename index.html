@@ -393,6 +393,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--vert);}
         </table>
         <div id="d_alert_warn" class="alert warning" style="display:none;">⚠️ Taux horaire réel en dessous de votre objectif.</div>
         <div id="d_alert_ok" class="alert success" style="display:none;">✅ Devis rentable — taux horaire dans votre objectif.</div>
+        <div id="d_alert_calib" class="alert info" style="display:none;"></div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
         <button class="btn btn-secondary" onclick="sauvegarderDevis()" style="margin-top:0;">💾 Sauvegarder</button>
@@ -985,10 +986,11 @@ function calcSection(cat, surf, zone) {
   let profilCompte = false;
   cat.forEach(p => {
     if (!isChecked(p.id)) return;
-    heures += surf * p.temps;
+    const t = getRatioCalibré(p.id) || p.temps;
+    heures += surf * t;
     if (tarifP && idsP.includes(p.id)) { profilCompte = true; }
     else if (p.tarif_fixe) { ht += surf * p.tarif_fixe; }
-    else { ht += (surf*p.temps*tauxH + surf*p.mat) * (1+marge); }
+    else { ht += (surf*t*tauxH + surf*p.mat) * (1+marge); }
   });
   if (profilCompte && tarifP) ht += surf * tarifP;
   return {heures, ht};
@@ -1033,15 +1035,16 @@ function calculerDevis() {
   if (murs > 0) {
     const tP=getTarifProfil(profilActif.murs), idsP=profilActif.murs?PROFILS.murs[profilActif.murs]:[];
     let sec='', done=false, hP=0, mP=0;
-    PM.forEach(p => { if(isChecked(p.id)&&tP&&idsP.includes(p.id)){hP+=murs*p.temps;mP+=murs*p.mat;} });
+    PM.forEach(p => { if(isChecked(p.id)&&tP&&idsP.includes(p.id)){hP+=murs*(getRatioCalibré(p.id)||p.temps);mP+=murs*p.mat;} });
     PM.forEach(p => {
       if (!isChecked(p.id)) return;
-      const h=murs*p.temps, mat=murs*p.mat;
+      const t=getRatioCalibré(p.id)||p.temps, h=murs*t, mat=murs*p.mat;
+      const calibTag=getRatioCalibré(p.id)?'*':'';
       if (tP && idsP.includes(p.id)) {
         if (!done) { sec+=`<tr><td>Forfait ${profilActif.murs} (${tP}€/m²)</td><td>${murs} m²</td><td>${hP.toFixed(1)}h</td><td>${mP.toFixed(0)}€</td><td>${(murs*tP).toFixed(0)}€</td></tr>`; totalH+=hP; totalMat+=mP; done=true; }
         return;
       }
-      sec += ligneD(p.nom, murs, 'm²', h, mat, p.tarif_fixe ? murs*p.tarif_fixe : (h*tauxH+mat)*(1+marge));
+      sec += ligneD(p.nom+calibTag, murs, 'm²', h, mat, p.tarif_fixe ? murs*p.tarif_fixe : (h*tauxH+mat)*(1+marge));
     });
     if (sec) detailHTML += `<tr class="section-row"><td colspan="5">🎨 MURS (${murs} m²)</td></tr>${sec}`;
   }
@@ -1050,15 +1053,16 @@ function calculerDevis() {
   if (plafond > 0) {
     const tP=getTarifProfil(profilActif.plafond), idsP=profilActif.plafond?PROFILS.plafond[profilActif.plafond]:[];
     let sec='', done=false, hP=0, mP=0;
-    PP.forEach(p => { if(isChecked(p.id)&&tP&&idsP.includes(p.id)){hP+=plafond*p.temps;mP+=plafond*p.mat;} });
+    PP.forEach(p => { if(isChecked(p.id)&&tP&&idsP.includes(p.id)){hP+=plafond*(getRatioCalibré(p.id)||p.temps);mP+=plafond*p.mat;} });
     PP.forEach(p => {
       if (!isChecked(p.id)) return;
-      const h=plafond*p.temps, mat=plafond*p.mat;
+      const t=getRatioCalibré(p.id)||p.temps, h=plafond*t, mat=plafond*p.mat;
+      const calibTag=getRatioCalibré(p.id)?'*':'';
       if (tP && idsP.includes(p.id)) {
         if (!done) { sec+=`<tr><td>Forfait ${profilActif.plafond} (${tP}€/m²)</td><td>${plafond} m²</td><td>${hP.toFixed(1)}h</td><td>${mP.toFixed(0)}€</td><td>${(plafond*tP).toFixed(0)}€</td></tr>`; totalH+=hP; totalMat+=mP; done=true; }
         return;
       }
-      sec += ligneD(p.nom, plafond, 'm²', h, mat, p.tarif_fixe ? plafond*p.tarif_fixe : (h*tauxH+mat)*(1+marge));
+      sec += ligneD(p.nom+calibTag, plafond, 'm²', h, mat, p.tarif_fixe ? plafond*p.tarif_fixe : (h*tauxH+mat)*(1+marge));
     });
     if (sec) detailHTML += `<tr class="section-row"><td colspan="5">🖌️ PLAFOND (${plafond} m²)</td></tr>${sec}`;
   }
@@ -1108,6 +1112,10 @@ function calculerDevis() {
   document.getElementById('detail-postes').innerHTML=detailHTML;
   document.getElementById('d_alert_warn').style.display=tauxReel<tauxH*0.9&&totalH>0?'block':'none';
   document.getElementById('d_alert_ok').style.display=tauxReel>=tauxH*0.9&&totalH>0?'block':'none';
+  const nbCalib=getNbRatiosCalibrés(PM)+getNbRatiosCalibrés(PP);
+  const elCalib=document.getElementById('d_alert_calib');
+  if (nbCalib>0) { elCalib.style.display='block'; elCalib.textContent='📐 '+nbCalib+' étape'+(nbCalib>1?'s':'')+' calculée'+(nbCalib>1?'s':'')+' avec vos ratios réels (marquées *) — basé sur vos chantiers documentés.'; }
+  else elCalib.style.display='none';
 
   window._lastDevis = {
     clientId: document.getElementById('d_clientId').value || null,
@@ -1389,6 +1397,22 @@ function supprimerChantier(id) {
 }
 
 // ==================== RATIOS ====================
+function getRatioCalibré(devisId) {
+  // m_xxx → em_xxx, p_xxx → ep_xxx
+  const chronoId = (devisId.startsWith('m_') || devisId.startsWith('p_')) ? 'e'+devisId : null;
+  if (!chronoId) return null;
+  const vals = [];
+  chantiersList.forEach(b => {
+    if (!b.etapes) return;
+    b.etapes.forEach(e => { if (e.id===chronoId && e.ratio>0) vals.push(e.ratio); });
+  });
+  return vals.length >= 2 ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+}
+
+function getNbRatiosCalibrés(cat) {
+  return cat.filter(p => isChecked(p.id) && getRatioCalibré(p.id) !== null).length;
+}
+
 function renderRatiosCalibrés() {
   const el=document.getElementById('ratios-calibres');
   if (!chantiersList.length) { el.innerHTML='<div class="empty-state">Documentez des chantiers pour voir vos ratios réels.</div>'; return; }
