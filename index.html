@@ -691,11 +691,23 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--vert);}
       <div class="grid-2">
         <div class="field"><label>Salaire objectif (€/mois)</label><input type="number" id="fin_p_salaire" placeholder="2000" min="0"></div>
         <div class="field"><label>Charges fixes annuelles (€)</label>
-          <input type="number" id="fin_p_charges" placeholder="3100" min="0">
-          <span style="font-size:0.65rem;color:var(--texte-doux);margin-top:2px;">CFE + assurance + carburant + divers</span>
+          <input type="number" id="fin_p_charges" placeholder="7450" min="0">
+          <span style="font-size:0.65rem;color:var(--texte-doux);margin-top:2px;">Assurances + véhicule + téléphones + logiciels + CFE (hors matériaux et URSSAF)</span>
         </div>
       </div>
       <button class="btn" style="max-width:220px;margin-top:12px;" onclick="sauvegarderFinParams()">💾 SAUVEGARDER</button>
+    </div>
+    <div class="card">
+      <div class="card-title">📥 Données historiques</div>
+      <p style="font-size:0.8rem;color:var(--texte-doux);margin-bottom:12px;">Charge automatiquement les données des relevés bancaires 2024, 2025 et 2026 (jan–mai). Les mois déjà saisis ne sont pas écrasés.</p>
+      <div style="background:var(--fond-carte);border:1px solid var(--bordure);border-radius:8px;padding:10px;font-size:0.75rem;margin-bottom:12px;">
+        <strong>Charges fixes réelles identifiées (2026) :</strong><br>
+        April prévoyance 1 086€ · Décennale QBE 1 672€ · Zéphir véhicule 948€<br>
+        Box Nov Habitat 1 117€ · Orange ×3 lignes 1 318€ · Free 240€<br>
+        Evoliz 216€ · Wix 202€ · Frais CA 300€ · CFE estimé 350€<br>
+        <strong>→ Total : 7 449€/an</strong>
+      </div>
+      <button class="btn" style="max-width:280px;" onclick="chargerDonneesHistoriques()">📥 CHARGER DONNÉES 2024-2026</button>
     </div>
   </div>
 </div>
@@ -1802,7 +1814,7 @@ function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 
 // ==================== FINANCES ====================
 let finances    = JSON.parse(localStorage.getItem('rp_finances')    || '[]');
-let finParams   = JSON.parse(localStorage.getItem('rp_fin_params')  || '{"salaire_objectif":2000,"charges_fixes":3100}');
+let finParams   = JSON.parse(localStorage.getItem('rp_fin_params')  || '{"salaire_objectif":2000,"charges_fixes":7450}');
 function saveFinances()  { localStorage.setItem('rp_finances',   JSON.stringify(finances)); }
 function saveFinParams() { localStorage.setItem('rp_fin_params', JSON.stringify(finParams)); }
 
@@ -1902,13 +1914,27 @@ function renderFinDashboard() {
     <td class="net-col">${ca>0?(ca-urssaf-achats).toLocaleString('fr-FR')+'€':'—'}</td>
   </tr>`;
 
+  // Comparaison inter-annuelle
+  const caAn = (a) => finGetAnnee(a).reduce((s,f)=>s+(f.ca||0),0);
+  const ca2024=caAn(2024), ca2025=caAn(2025), ca2026=caAn(2026);
+  const evol2526 = ca2025>0&&ca2026>0 ? Math.round((ca2026/5*12-ca2025)/ca2025*100) : null;
+
   const html = `
     <div class="fin-kpi-grid">
-      <div class="fin-kpi vert"><div class="fin-kpi-val">${ca>0?ca.toLocaleString('fr-FR')+'€':'—'}</div><div class="fin-kpi-lbl">CA HT ${annee}</div></div>
-      <div class="fin-kpi rouge"><div class="fin-kpi-val">${ca>0?urssaf.toLocaleString('fr-FR')+'€':'—'}</div><div class="fin-kpi-lbl">URSSAF à payer</div></div>
+      <div class="fin-kpi vert"><div class="fin-kpi-val">${ca>0?ca.toLocaleString('fr-FR')+'€':'—'}</div><div class="fin-kpi-lbl">CA encaissé ${annee}</div></div>
+      <div class="fin-kpi rouge"><div class="fin-kpi-val">${ca>0?urssaf.toLocaleString('fr-FR')+'€':'—'}</div><div class="fin-kpi-lbl">URSSAF estimée</div></div>
       <div class="fin-kpi or"><div class="fin-kpi-val">${ca>0?ir.toLocaleString('fr-FR')+'€':'—'}</div><div class="fin-kpi-lbl">IR estimé</div></div>
       <div class="fin-kpi ${kpiClass}"><div class="fin-kpi-val">${ca>0?net_mens.toLocaleString('fr-FR')+'€':'—'}</div><div class="fin-kpi-lbl">Disponible / mois</div></div>
     </div>
+    ${(ca2024>0||ca2025>0||ca2026>0)?`<div class="card"><div class="card-title">Évolution CA</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      ${ca2024>0?`<div style="flex:1;min-width:80px;text-align:center;background:var(--fond-carte);border-radius:8px;padding:10px;"><div style="font-size:1.1rem;font-weight:700;">${ca2024.toLocaleString('fr-FR')}€</div><div style="font-size:0.7rem;color:var(--texte-doux);">2024</div></div>`:''}
+      ${ca2025>0?`<div style="flex:1;min-width:80px;text-align:center;background:var(--fond-carte);border-radius:8px;padding:10px;"><div style="font-size:1.1rem;font-weight:700;">${ca2025.toLocaleString('fr-FR')}€</div><div style="font-size:0.7rem;color:var(--texte-doux);">2025</div></div>`:''}
+      ${ca2026>0?`<div style="flex:1;min-width:80px;text-align:center;background:var(--fond-card);border:2px solid var(--bleu);border-radius:8px;padding:10px;"><div style="font-size:1.1rem;font-weight:700;color:var(--bleu);">${(ca2026/5*12).toLocaleString('fr-FR',{maximumFractionDigits:0})}€</div><div style="font-size:0.7rem;color:var(--texte-doux);">2026 projeté</div></div>`:''}
+    </div>
+    ${evol2526!==null?`<p style="font-size:0.75rem;margin-top:8px;color:${evol2526>=0?'var(--vert-clair)':'var(--rouge)'};">${evol2526>=0?'↑':'↓'} ${Math.abs(evol2526)}% vs 2025 (projection 12 mois)</p>`:''}
+    <p style="font-size:0.65rem;color:var(--texte-doux);margin-top:4px;">CA = encaissements clients banque — diffère légèrement du CA déclaré URSSAF selon délais de paiement.</p>
+    </div>`:''}
     ${ca>0?`
     <div class="card">
       <div class="card-title">Salaire objectif — ${sal_obj}€/mois</div>
@@ -2016,9 +2042,64 @@ function sauvegarderFinParams() {
   alert('✅ Paramètres financiers sauvegardés !');
 }
 
+// ==================== DONNÉES HISTORIQUES ====================
+const DONNEES_HISTORIQUES = [
+  // 2024 — relevé Crédit Agricole
+  {annee:2024,mois:1, ca:0,     achats:1127,prelevement:4060,charges:0,notes:''},
+  {annee:2024,mois:2, ca:6850,  achats:2111,prelevement:2500,charges:0,notes:'Montel St Paul'},
+  {annee:2024,mois:3, ca:27623, achats:1155,prelevement:2500,charges:0,notes:'Chantier Soumet (gros)'},
+  {annee:2024,mois:4, ca:11215, achats:1574,prelevement:5000,charges:0,notes:''},
+  {annee:2024,mois:5, ca:6584,  achats:836, prelevement:0,   charges:0,notes:''},
+  {annee:2024,mois:6, ca:970,   achats:482, prelevement:2500,charges:0,notes:''},
+  {annee:2024,mois:7, ca:8580,  achats:2833,prelevement:4000,charges:0,notes:''},
+  {annee:2024,mois:8, ca:1538,  achats:1807,prelevement:1000,charges:0,notes:''},
+  {annee:2024,mois:9, ca:4570,  achats:47,  prelevement:2500,charges:0,notes:''},
+  {annee:2024,mois:10,ca:5436,  achats:978, prelevement:0,   charges:0,notes:''},
+  {annee:2024,mois:11,ca:3696,  achats:1139,prelevement:2000,charges:0,notes:''},
+  {annee:2024,mois:12,ca:5985,  achats:380, prelevement:0,   charges:0,notes:''},
+  // 2025 — relevé Crédit Agricole
+  {annee:2025,mois:1, ca:6955,  achats:743, prelevement:2000,charges:0,notes:''},
+  {annee:2025,mois:2, ca:7060,  achats:1577,prelevement:4000,charges:0,notes:'Rattrapage sal. jan'},
+  {annee:2025,mois:3, ca:595,   achats:1309,prelevement:2000,charges:0,notes:'Mois creux'},
+  {annee:2025,mois:4, ca:14074, achats:1425,prelevement:2000,charges:0,notes:'Cibois + Sanna'},
+  {annee:2025,mois:5, ca:4856,  achats:714, prelevement:2000,charges:0,notes:''},
+  {annee:2025,mois:6, ca:4760,  achats:820, prelevement:2000,charges:0,notes:'Castagna + Pillon'},
+  {annee:2025,mois:7, ca:6466,  achats:667, prelevement:2000,charges:0,notes:'Checinsky + Hamm'},
+  {annee:2025,mois:8, ca:2475,  achats:835, prelevement:2000,charges:0,notes:''},
+  {annee:2025,mois:9, ca:7524,  achats:735, prelevement:2500,charges:0,notes:'Monnerat x2'},
+  {annee:2025,mois:10,ca:8004,  achats:2039,prelevement:0,   charges:0,notes:''},
+  {annee:2025,mois:11,ca:0,     achats:910, prelevement:2200,charges:0,notes:''},
+  {annee:2025,mois:12,ca:4481,  achats:478, prelevement:2000,charges:0,notes:''},
+  // 2026 — relevé Crédit Agricole jan–mai
+  {annee:2026,mois:1, ca:3386,  achats:732, prelevement:1400,charges:0,notes:''},
+  {annee:2026,mois:2, ca:6616,  achats:572, prelevement:2700,charges:600,notes:'Avocat 600€'},
+  {annee:2026,mois:3, ca:5937,  achats:583, prelevement:2000,charges:0,notes:''},
+  {annee:2026,mois:4, ca:9058,  achats:1289,prelevement:2000,charges:0,notes:'Colin/Alibay acompte'},
+  {annee:2026,mois:5, ca:7041,  achats:1572,prelevement:2000,charges:0,notes:'Colin/Alibay solde'},
+];
+
+function chargerDonneesHistoriques() {
+  const nbExist = DONNEES_HISTORIQUES.filter(d => finances.find(f=>f.annee==d.annee&&f.mois==d.mois)).length;
+  const msg = nbExist > 0
+    ? `Charger ${DONNEES_HISTORIQUES.length} mois (2024–2026) depuis les relevés bancaires ?\n${nbExist} mois déjà saisis seront conservés (non écrasés).`
+    : `Charger ${DONNEES_HISTORIQUES.length} mois (2024–2026) depuis les relevés bancaires ?`;
+  if (!confirm(msg)) return;
+  let nb = 0;
+  DONNEES_HISTORIQUES.forEach(d => {
+    if (!finances.find(f=>f.annee==d.annee&&f.mois==d.mois)) {
+      finances.push({id:genId(), annee:d.annee, mois:d.mois, ca:d.ca, achats:d.achats, prelevement:d.prelevement, charges:d.charges, notes:d.notes});
+      nb++;
+    }
+  });
+  saveFinances();
+  finAnneeActive = 2026;
+  renderFinances();
+  alert(`✅ ${nb} mois chargés ! (${DONNEES_HISTORIQUES.length - nb} mois existants conservés)`);
+}
+
 // ==================== EXPORT / IMPORT ====================
 function exporterDonnees() {
-  const data={clients, devisList, chantiersList, params, exportDate:new Date().toISOString()};
+  const data={clients, devisList, chantiersList, params, finances, finParams, exportDate:new Date().toISOString()};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -2036,6 +2117,8 @@ function importerDonnees(event) {
       if (data.devisList)    { devisList=data.devisList; saveDevis(); }
       if (data.chantiersList){ chantiersList=data.chantiersList; saveChantiers(); }
       if (data.params)       { params=data.params; saveParams(); }
+      if (data.finances)     { finances=data.finances; saveFinances(); }
+      if (data.finParams)    { finParams=data.finParams; saveFinParams(); }
       alert('✅ Import réussi !'); location.reload();
     } catch(err) { alert('Fichier invalide.'); }
   };
