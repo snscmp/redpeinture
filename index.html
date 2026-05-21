@@ -209,6 +209,29 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--vert);}
 .apikey-field{position:relative;}
 .apikey-field input{padding-right:80px;}
 .apikey-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:1px solid var(--gris-clair);color:var(--texte-doux);padding:3px 8px;border-radius:4px;cursor:pointer;font-size:0.7rem;}
+
+/* Finances */
+.fin-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;}
+.fin-kpi{background:var(--gris-moyen);border:1px solid var(--gris-clair);border-radius:10px;padding:14px;text-align:center;}
+.fin-kpi.vert{background:rgba(26,107,58,0.2);border-color:var(--vert);}
+.fin-kpi.rouge{background:rgba(231,76,60,0.15);border-color:var(--rouge);}
+.fin-kpi.or{background:rgba(240,192,64,0.15);border-color:var(--or);}
+.fin-kpi-val{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;color:var(--vert-clair);line-height:1;}
+.fin-kpi.rouge .fin-kpi-val{color:var(--rouge);}
+.fin-kpi.or .fin-kpi-val{color:var(--or);}
+.fin-kpi-lbl{font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--texte-doux);margin-top:4px;}
+.fin-table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+.fin-table th{text-align:left;padding:8px 10px;background:rgba(0,0,0,0.3);color:var(--texte-doux);font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;}
+.fin-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.fin-table tr:last-child td{border-bottom:none;}
+.fin-table .total-row td{font-weight:700;color:var(--vert-clair);background:rgba(26,107,58,0.1);}
+.fin-table .urssaf-col{color:var(--rouge);}
+.fin-table .net-col{color:var(--vert-clair);font-weight:600;}
+.salaire-bar{background:var(--gris-moyen);border-radius:20px;height:12px;overflow:hidden;margin:8px 0;}
+.salaire-bar-fill{height:100%;border-radius:20px;transition:width 0.5s;}
+.mois-selector{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+.annee-btn{background:var(--gris-moyen);border:1px solid var(--gris-clair);color:var(--texte-doux);padding:5px 14px;border-radius:20px;cursor:pointer;font-size:0.8rem;transition:all 0.15s;}
+.annee-btn.active{background:var(--vert);border-color:var(--vert);color:white;}
 </style>
 </head>
 <body>
@@ -225,6 +248,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--vert);}
   <button class="tab" onclick="showTab('chantiers',this)">⏱ Chantiers</button>
   <button class="tab" onclick="showTab('ratios',this)">📐 Mes ratios</button>
   <button class="tab" onclick="showTab('communication',this)">📣 Communication</button>
+  <button class="tab" onclick="showTab('finances',this)">💰 Finances</button>
   <button class="tab" onclick="showTab('params',this)">⚙️ Params</button>
 </div>
 
@@ -611,6 +635,71 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--vert);}
   </div>
 </div>
 
+<!-- ===== FINANCES ===== -->
+<div class="section" id="tab-finances">
+  <div class="sub-tabs">
+    <button class="tab active" onclick="showSubTab('finances','dashboard',this)">📊 Tableau de bord</button>
+    <button class="tab" onclick="showSubTab('finances','saisie',this)">✏️ Saisie mensuelle</button>
+    <button class="tab" onclick="showSubTab('finances','parametres',this)">⚙️ Paramètres</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="sub-finances-dashboard">
+    <div class="card">
+      <div class="card-title">Année</div>
+      <div class="mois-selector" id="fin-annees"></div>
+    </div>
+    <div id="fin-dashboard-content"></div>
+  </div>
+
+  <!-- SAISIE -->
+  <div id="sub-finances-saisie" style="display:none;">
+    <div class="card">
+      <div class="card-title">✏️ Saisir un mois</div>
+      <div class="grid-2">
+        <div class="field"><label>Année</label>
+          <select id="fin_annee"></select>
+        </div>
+        <div class="field"><label>Mois</label>
+          <select id="fin_mois">
+            <option value="1">Janvier</option><option value="2">Février</option>
+            <option value="3">Mars</option><option value="4">Avril</option>
+            <option value="5">Mai</option><option value="6">Juin</option>
+            <option value="7">Juillet</option><option value="8">Août</option>
+            <option value="9">Septembre</option><option value="10">Octobre</option>
+            <option value="11">Novembre</option><option value="12">Décembre</option>
+          </select>
+        </div>
+        <div class="field"><label>CA encaissé HT (€)</label><input type="number" id="fin_ca" placeholder="0" min="0"></div>
+        <div class="field"><label>Achats matériaux HT (€)</label><input type="number" id="fin_achats" placeholder="0" min="0"></div>
+        <div class="field"><label>Prélèvement personnel (€)</label><input type="number" id="fin_prelevement" placeholder="2000" min="0"></div>
+        <div class="field"><label>Autres charges (carburant, téléphone…)</label><input type="number" id="fin_charges" placeholder="0" min="0"></div>
+      </div>
+      <div class="field" style="margin-top:10px;"><label>Notes</label><input type="text" id="fin_notes" placeholder="Optionnel"></div>
+      <button class="btn" style="max-width:240px;margin-top:12px;" onclick="sauvegarderMois()">💾 SAUVEGARDER CE MOIS</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Historique des saisies</div>
+      <div id="fin-liste-saisies"><div class="empty-state">Aucune saisie.</div></div>
+    </div>
+  </div>
+
+  <!-- PARAMÈTRES FINANCIERS -->
+  <div id="sub-finances-parametres" style="display:none;">
+    <div class="card">
+      <div class="card-title">⚙️ Paramètres financiers</div>
+      <div class="grid-2">
+        <div class="field"><label>Salaire objectif (€/mois)</label><input type="number" id="fin_p_salaire" placeholder="2000" min="0"></div>
+        <div class="field"><label>Charges fixes annuelles (€)</label>
+          <input type="number" id="fin_p_charges" placeholder="3100" min="0">
+          <span style="font-size:0.65rem;color:var(--texte-doux);margin-top:2px;">CFE + assurance + carburant + divers</span>
+        </div>
+      </div>
+      <button class="btn" style="max-width:220px;margin-top:12px;" onclick="sauvegarderFinParams()">💾 SAUVEGARDER</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== PARAMS ===== -->
 <div class="section" id="tab-params">
   <div class="card">
@@ -806,6 +895,7 @@ function showTab(tab, btn) {
   if (tab === 'dashboard') renderDashboard();
   if (tab === 'clients') renderClients();
   if (tab === 'ratios') { renderRatiosCalibrés(); renderRatiosReference(); }
+  if (tab === 'finances') renderFinances();
   if (tab === 'communication') {
     document.getElementById('sub-communication-posts').style.display='block';
     document.getElementById('sub-communication-avis').style.display='none';
@@ -1710,6 +1800,222 @@ function showComError(section, msg) {
 }
 function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
+// ==================== FINANCES ====================
+let finances    = JSON.parse(localStorage.getItem('rp_finances')    || '[]');
+let finParams   = JSON.parse(localStorage.getItem('rp_fin_params')  || '{"salaire_objectif":2000,"charges_fixes":3100}');
+function saveFinances()  { localStorage.setItem('rp_finances',   JSON.stringify(finances)); }
+function saveFinParams() { localStorage.setItem('rp_fin_params', JSON.stringify(finParams)); }
+
+const MOIS_NOMS = ['','Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const TAUX_URSSAF = 0.22;
+const ABATTEMENT_IR = 0.50;
+
+function finGetAnnees() {
+  const annee = new Date().getFullYear();
+  const fromFin = finances.map(f => f.annee);
+  return [...new Set([annee-1, annee, annee+1, ...fromFin])].sort((a,b) => b-a);
+}
+
+function finGetMois(annee, mois) {
+  return finances.find(f => f.annee==annee && f.mois==mois) || null;
+}
+
+function finGetAnnee(annee) {
+  return finances.filter(f => f.annee==annee);
+}
+
+function estimerIR(ca) {
+  const imposable = ca * ABATTEMENT_IR;
+  const tranche = Math.max(0, imposable - 11294);
+  return Math.round(tranche * 0.11);
+}
+
+let finAnneeActive = new Date().getFullYear();
+
+function renderFinances() {
+  // Boutons années
+  const annees = finGetAnnees();
+  document.getElementById('fin-annees').innerHTML = annees.map(a =>
+    `<button class="annee-btn ${a==finAnneeActive?'active':''}" onclick="finSetAnnee(${a})">${a}</button>`
+  ).join('');
+  renderFinDashboard();
+  renderFinSaisies();
+  // Pré-remplir les paramètres
+  document.getElementById('fin_p_salaire').value = finParams.salaire_objectif || 2000;
+  document.getElementById('fin_p_charges').value  = finParams.charges_fixes   || 3100;
+  // Sélecteur saisie
+  const selAn = document.getElementById('fin_annee');
+  selAn.innerHTML = annees.map(a => `<option value="${a}" ${a==new Date().getFullYear()?'selected':''}>${a}</option>`).join('');
+}
+
+function finSetAnnee(a) {
+  finAnneeActive = a;
+  renderFinances();
+}
+
+function renderFinDashboard() {
+  const annee = finAnneeActive;
+  const entries = finGetAnnee(annee);
+  const ca       = entries.reduce((s,f)=>s+(f.ca||0), 0);
+  const achats   = entries.reduce((s,f)=>s+(f.achats||0), 0);
+  const prelev   = entries.reduce((s,f)=>s+(f.prelevement||0), 0);
+  const charges  = entries.reduce((s,f)=>s+(f.charges||0), 0);
+  const urssaf   = Math.round(ca * TAUX_URSSAF);
+  const cfAnnuel = finParams.charges_fixes || 3100;
+  const ir       = estimerIR(ca);
+  const total_charges = urssaf + achats + charges + cfAnnuel + ir;
+  const net      = ca - total_charges;
+  const net_mens = Math.round(net / 12);
+  const sal_obj  = finParams.salaire_objectif || 2000;
+  const sal_pct  = Math.min(100, Math.round((net_mens / sal_obj)*100));
+  const sal_color= sal_pct>=100?'var(--vert-clair)':sal_pct>=75?'var(--or)':'var(--rouge)';
+  const kpiClass = sal_pct>=100?'vert':sal_pct>=75?'or':'rouge';
+
+  // Tableau trimestriel
+  const trimestres = [
+    {label:'T1',mois:[1,2,3]},{label:'T2',mois:[4,5,6]},
+    {label:'T3',mois:[7,8,9]},{label:'T4',mois:[10,11,12]}
+  ];
+  let tabHTML = '';
+  trimestres.forEach(t => {
+    const tEntries = entries.filter(f=>t.mois.includes(f.mois));
+    const tCA    = tEntries.reduce((s,f)=>s+(f.ca||0),0);
+    const tAch   = tEntries.reduce((s,f)=>s+(f.achats||0),0);
+    const tPrel  = tEntries.reduce((s,f)=>s+(f.prelevement||0),0);
+    const tUrssaf= Math.round(tCA * TAUX_URSSAF);
+    const nbMois = tEntries.filter(f=>f.ca>0).length;
+    tabHTML += `<tr>
+      <td><strong>${t.label}</strong></td>
+      <td>${tCA>0?tCA.toLocaleString('fr-FR')+'€':'—'}</td>
+      <td class="urssaf-col">${tCA>0?tUrssaf.toLocaleString('fr-FR')+'€':'—'}</td>
+      <td>${tAch>0?tAch.toLocaleString('fr-FR')+'€':'—'}</td>
+      <td>${tPrel>0?tPrel.toLocaleString('fr-FR')+'€':'—'}</td>
+      <td class="net-col">${tCA>0?(tCA-tUrssaf-tAch).toLocaleString('fr-FR')+'€':'—'}</td>
+    </tr>`;
+  });
+  tabHTML += `<tr class="total-row">
+    <td>TOTAL ${annee}</td>
+    <td>${ca>0?ca.toLocaleString('fr-FR')+'€':'—'}</td>
+    <td class="urssaf-col">${ca>0?urssaf.toLocaleString('fr-FR')+'€':'—'}</td>
+    <td>${achats>0?achats.toLocaleString('fr-FR')+'€':'—'}</td>
+    <td>${prelev>0?prelev.toLocaleString('fr-FR')+'€':'—'}</td>
+    <td class="net-col">${ca>0?(ca-urssaf-achats).toLocaleString('fr-FR')+'€':'—'}</td>
+  </tr>`;
+
+  const html = `
+    <div class="fin-kpi-grid">
+      <div class="fin-kpi vert"><div class="fin-kpi-val">${ca>0?ca.toLocaleString('fr-FR')+'€':'—'}</div><div class="fin-kpi-lbl">CA HT ${annee}</div></div>
+      <div class="fin-kpi rouge"><div class="fin-kpi-val">${ca>0?urssaf.toLocaleString('fr-FR')+'€':'—'}</div><div class="fin-kpi-lbl">URSSAF à payer</div></div>
+      <div class="fin-kpi or"><div class="fin-kpi-val">${ca>0?ir.toLocaleString('fr-FR')+'€':'—'}</div><div class="fin-kpi-lbl">IR estimé</div></div>
+      <div class="fin-kpi ${kpiClass}"><div class="fin-kpi-val">${ca>0?net_mens.toLocaleString('fr-FR')+'€':'—'}</div><div class="fin-kpi-lbl">Disponible / mois</div></div>
+    </div>
+    ${ca>0?`
+    <div class="card">
+      <div class="card-title">Salaire objectif — ${sal_obj}€/mois</div>
+      <div class="salaire-bar"><div class="salaire-bar-fill" style="width:${sal_pct}%;background:${sal_color};"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--texte-doux);margin-top:4px;">
+        <span>Disponible réel : <strong style="color:${sal_color};">${net_mens.toLocaleString('fr-FR')}€/mois</strong></span>
+        <span>${sal_pct}% de l'objectif</span>
+      </div>
+      ${net_mens>=sal_obj
+        ? `<div class="alert success" style="margin-top:10px;">✅ Objectif atteint — il vous reste ${(net_mens-sal_obj).toLocaleString('fr-FR')}€/mois de marge.</div>`
+        : `<div class="alert warning" style="margin-top:10px;">⚠️ Il manque ${(sal_obj-net_mens).toLocaleString('fr-FR')}€/mois — CA annuel minimum requis : ${Math.ceil(sal_obj*12/(1-TAUX_URSSAF-0.15)).toLocaleString('fr-FR')}€.</div>`
+      }
+    </div>
+    <div class="card">
+      <div class="card-title">Détail des charges — ${annee}</div>
+      <table class="fin-table">
+        <thead><tr><th>Poste</th><th>Montant</th><th>% CA</th></tr></thead>
+        <tbody>
+          <tr><td>Achats matériaux</td><td>${achats.toLocaleString('fr-FR')}€</td><td>${ca>0?Math.round(achats/ca*100):0}%</td></tr>
+          <tr><td>URSSAF (22%)</td><td class="urssaf-col">${urssaf.toLocaleString('fr-FR')}€</td><td>22%</td></tr>
+          <tr><td>Charges fixes (CFE, assurance…)</td><td>${cfAnnuel.toLocaleString('fr-FR')}€</td><td>${ca>0?Math.round(cfAnnuel/ca*100):0}%</td></tr>
+          <tr><td>Autres charges saisies</td><td>${charges.toLocaleString('fr-FR')}€</td><td>${ca>0?Math.round(charges/ca*100):0}%</td></tr>
+          <tr><td>IR estimé</td><td class="urssaf-col">${ir.toLocaleString('fr-FR')}€</td><td>${ca>0?Math.round(ir/ca*100):0}%</td></tr>
+          <tr class="total-row"><td>Net disponible</td><td class="net-col">${net.toLocaleString('fr-FR')}€</td><td>${ca>0?Math.round(net/ca*100):0}%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">Par trimestre — ${annee}</div>
+      <div style="overflow-x:auto;">
+        <table class="fin-table">
+          <thead><tr><th>Trim.</th><th>CA HT</th><th>URSSAF</th><th>Matériaux</th><th>Prélèvements</th><th>Net brut</th></tr></thead>
+          <tbody>${tabHTML}</tbody>
+        </table>
+      </div>
+      <p style="font-size:0.7rem;color:var(--texte-doux);margin-top:8px;">Net brut = CA − URSSAF − matériaux (avant charges fixes et IR)</p>
+    </div>`
+    : `<div class="card"><div class="empty-state">Aucune donnée pour ${annee}.<br>Allez dans "Saisie mensuelle" pour commencer.</div></div>`}
+  `;
+  document.getElementById('fin-dashboard-content').innerHTML = html;
+}
+
+function renderFinSaisies() {
+  const el = document.getElementById('fin-liste-saisies');
+  const entries = finances.slice().sort((a,b) => b.annee-a.annee || b.mois-a.mois);
+  if (!entries.length) { el.innerHTML='<div class="empty-state">Aucune saisie.</div>'; return; }
+  el.innerHTML = entries.map(f => `
+    <div class="item-card">
+      <div class="item-header">
+        <div>
+          <div class="item-nom">${MOIS_NOMS[f.mois]} ${f.annee}</div>
+          <div class="item-meta">CA : ${(f.ca||0).toLocaleString('fr-FR')}€ · Matériaux : ${(f.achats||0).toLocaleString('fr-FR')}€ · Prélèvement : ${(f.prelevement||0).toLocaleString('fr-FR')}€${f.notes?' · 📝 '+f.notes:''}</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn-small-green" onclick="chargerMois(${f.id})">✏️</button>
+          <button class="btn-small" onclick="supprimerMois(${f.id})">✕</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function sauvegarderMois() {
+  const annee = parseInt(document.getElementById('fin_annee').value);
+  const mois  = parseInt(document.getElementById('fin_mois').value);
+  const ca    = parseFloat(document.getElementById('fin_ca').value)||0;
+  const achats= parseFloat(document.getElementById('fin_achats').value)||0;
+  const prelev= parseFloat(document.getElementById('fin_prelevement').value)||0;
+  const charg = parseFloat(document.getElementById('fin_charges').value)||0;
+  const notes = document.getElementById('fin_notes').value.trim();
+  // Remplacer si existe déjà
+  const existing = finances.findIndex(f=>f.annee==annee&&f.mois==mois);
+  const entry = {id: existing>=0?finances[existing].id:genId(), annee, mois, ca, achats, prelevement:prelev, charges:charg, notes};
+  if (existing>=0) finances[existing]=entry; else finances.push(entry);
+  saveFinances();
+  ['fin_ca','fin_achats','fin_prelevement','fin_charges','fin_notes'].forEach(id=>document.getElementById(id).value='');
+  finAnneeActive = annee;
+  renderFinances();
+  alert(`✅ ${MOIS_NOMS[mois]} ${annee} sauvegardé !`);
+}
+
+function chargerMois(id) {
+  const f = finances.find(f=>f.id===id); if (!f) return;
+  document.getElementById('fin_annee').value     = f.annee;
+  document.getElementById('fin_mois').value      = f.mois;
+  document.getElementById('fin_ca').value        = f.ca||'';
+  document.getElementById('fin_achats').value    = f.achats||'';
+  document.getElementById('fin_prelevement').value= f.prelevement||'';
+  document.getElementById('fin_charges').value   = f.charges||'';
+  document.getElementById('fin_notes').value     = f.notes||'';
+  showSubTab('finances','saisie', document.querySelector('#tab-finances .sub-tabs .tab:nth-child(2)'));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function supprimerMois(id) {
+  if (!confirm('Supprimer cette saisie ?')) return;
+  finances = finances.filter(f=>f.id!==id);
+  saveFinances(); renderFinSaisies(); renderFinDashboard();
+}
+
+function sauvegarderFinParams() {
+  finParams.salaire_objectif = parseFloat(document.getElementById('fin_p_salaire').value)||2000;
+  finParams.charges_fixes    = parseFloat(document.getElementById('fin_p_charges').value)||3100;
+  saveFinParams();
+  renderFinDashboard();
+  alert('✅ Paramètres financiers sauvegardés !');
+}
+
 // ==================== EXPORT / IMPORT ====================
 function exporterDonnees() {
   const data={clients, devisList, chantiersList, params, exportDate:new Date().toISOString()};
@@ -1752,6 +2058,7 @@ window.onload = function() {
   document.getElementById('p_km').value=params.km;
   const savedKey=localStorage.getItem('rp_apikey')||'';
   document.getElementById('p_apikey').value=savedKey;
+  finAnneeActive = new Date().getFullYear();
   renderPrestations('presta-murs', PM);
   renderPrestations('presta-plafond', PP);
   renderEtapes('etapes-murs', ETAPES_MURS, 'm²');
